@@ -1,0 +1,11 @@
+import React from 'react';
+
+export function Label({ className = '', ...props }) {
+  return (
+    <label
+      className={`text-sm font-medium leading-none text-neutral-800 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`}
+      {...props}
+    />
+  );
+}
+
