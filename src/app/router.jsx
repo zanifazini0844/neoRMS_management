@@ -62,6 +62,7 @@ import { InventoryProvider } from '../pages/inventory/InventoryContext';
 import { SearchProvider } from '../shared/search/SearchContext';
 import SearchResults from '../shared/search/SearchResults';
 import { authRoutes } from '../pages/login_registration/auth.routes';
+
 function AppRouter() {
   return (
     <BrowserRouter>
