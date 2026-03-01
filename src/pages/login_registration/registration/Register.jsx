@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '@/services/api';
 import AuthCard from "../../../pages/login_registration/AuthCard";
 import AuthForm from "../../../pages/login_registration/AuthForm";
+import { registerOwner } from "@/services/registerApi"; 
 
 export default function OwnerRegister() {
   const navigate = useNavigate();
 
-  // only owners are allowed to self-register in this portal
   const role = 'owner';
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -27,13 +25,7 @@ export default function OwnerRegister() {
     setError('');
 
     try {
-      await api.post('/user/signup', {
-        fullName,
-        email,
-        password,
-        role: role.toUpperCase(), // ensure OWNER
-      });
-
+      await registerOwner({ fullName, email, password });
       navigate('/login', { replace: true });
     } catch (err) {
       const message =

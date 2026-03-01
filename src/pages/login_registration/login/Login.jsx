@@ -1,12 +1,12 @@
+// src/pages/login/ManagementLogin.jsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "@/services/api";
+import { useNavigate } from "react-router-dom";
 import AuthCard from "../../../pages/login_registration/AuthCard";
 import AuthForm from "../../../pages/login_registration/AuthForm";
+import { loginManagement } from "@/services/loginApi"; 
 
 export default function ManagementLogin() {
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -15,13 +15,9 @@ export default function ManagementLogin() {
     setError("");
 
     try {
-      const response = await api.post("/auth/login/management", { email, password });
-      console.log("Login successful:", response);
+      const { accessToken, user } = await loginManagement({ email, password });
 
-      const { accessToken, user } = response.data?.data ?? {};
-
-      if (!accessToken || !user?.role) throw new Error("Invalid response from server");
-
+      // Save to localStorage
       localStorage.setItem("authToken", accessToken);
       localStorage.setItem("authRole", user.role);
       localStorage.setItem("role", String(user.role).toLowerCase());
@@ -29,6 +25,7 @@ export default function ManagementLogin() {
         localStorage.setItem("userName", user.fullName || user.name);
       }
 
+      // Navigate after successful login
       navigate("/admin", { replace: true });
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Login failed");
@@ -57,7 +54,6 @@ export default function ManagementLogin() {
           </span>
         }
       />
-
       <p className="mt-4 text-xs text-neutral-400">
         Only the restaurant owner can self-register. Managers and staff should use their assigned credentials.
       </p>

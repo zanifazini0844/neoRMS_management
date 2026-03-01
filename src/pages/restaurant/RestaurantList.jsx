@@ -1,299 +1,180 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import RightPanel from '../../shared/panels/RightPanel';
+import React, { useState, useEffect } from 'react';
+import { fetchOwnerRestaurants, createRestaurant } from '@/services/restaurant/restaurantApi';
+import { Plus, AlertCircle, Loader2, X, ImagePlus } from 'lucide-react';
 
-const MOCK_RESTAURANTS = [
-  {
-    id: 1,
-    name: 'Downtown Branch',
-    location: 'Downtown',
-    revenue: 120000,
-    manager: 'Alice Johnson',
-  },
-  {
-    id: 2,
-    name: 'Uptown Branch',
-    location: 'Uptown',
-    revenue: 95000,
-    manager: 'Brian Smith',
-  },
-];
+const RestaurantList = () => {
+  const [restaurants, setRestaurants] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-function RestaurantList() {
-  const role =
-    typeof window !== 'undefined'
-      ? window.localStorage.getItem('role')
-      : null;
-
-  const [restaurants, setRestaurants] = useState(MOCK_RESTAURANTS);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [formValues, setFormValues] = useState({
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
     name: '',
+    tagline: '',
+    description: '',
     location: '',
-    manager: '',
-    revenue: '',
+    contactInfo: '',
+    bannerImage: ''
   });
+  const [previewImage, setPreviewImage] = useState(null);
+  const [formError, setFormError] = useState(null);
 
-  // Owner only view
-  if (role !== 'owner') {
-    return <Navigate to="/unauthorized" replace />;
-  }
+  useEffect(() => {
+    loadRestaurants();
+  }, []);
 
-  const handleOpenPanel = () => {
-    setEditingId(null);
-    setFormValues({
-      name: '',
-      location: '',
-      manager: '',
-      revenue: '',
-    });
-    setIsPanelOpen(true);
-  };
-
-  const handleClosePanel = () => {
-    setIsPanelOpen(false);
-  };
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const revenueValue = Number(formValues.revenue || 0);
-
-    if (editingId != null) {
-      setRestaurants((prev) =>
-        prev.map((rest) =>
-          rest.id === editingId
-            ? {
-                ...rest,
-                name: formValues.name,
-                location: formValues.location,
-                manager: formValues.manager,
-                revenue: Number.isNaN(revenueValue) ? rest.revenue : revenueValue,
-              }
-            : rest,
-        ),
-      );
-    } else {
-      const nextId =
-        restaurants.length > 0
-          ? Math.max(...restaurants.map((r) => r.id)) + 1
-          : 1;
-
-      const newRestaurant = {
-        id: nextId,
-        name: formValues.name,
-        location: formValues.location,
-        manager: formValues.manager,
-        revenue: Number.isNaN(revenueValue) ? 0 : revenueValue,
-      };
-
-      setRestaurants((prev) => [...prev, newRestaurant]);
+  const loadRestaurants = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchOwnerRestaurants();
+      setRestaurants(data);
+      setError(null);
+    } catch {
+      setError("Failed to load restaurants.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsPanelOpen(false);
   };
 
-  const handleRowClick = (rest) => {
-    setEditingId(rest.id);
-    setFormValues({
-      name: rest.name,
-      location: rest.location,
-      manager: rest.manager,
-      revenue: String(rest.revenue),
-    });
-    setIsPanelOpen(true);
+  const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return setFormError("Image must be <2MB");
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+      setFormData({ ...formData, bannerImage: reader.result });
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleDelete = () => {
-    if (editingId == null) return;
-    setRestaurants((prev) => prev.filter((rest) => rest.id !== editingId));
-    setIsPanelOpen(false);
+  const removeImage = () => {
+    setPreviewImage(null);
+    setFormData({ ...formData, bannerImage: '' });
+    const fileInput = document.getElementById('bannerImage');
+    if (fileInput) fileInput.value = '';
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) return setFormError("Restaurant name is required");
+
+    try {
+      setIsSubmitting(true);
+      const payload = { ...formData };
+      Object.keys(payload).forEach(k => payload[k] === '' && delete payload[k]);
+      const newRestaurant = await createRestaurant(payload);
+      setRestaurants(prev => [...prev, newRestaurant]);
+      handleCloseModal();
+    } catch {
+      setFormError("Failed to create restaurant.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setFormData({ name: '', tagline: '', description: '', location: '', contactInfo: '', bannerImage: '' });
+    setPreviewImage(null);
+    setFormError(null);
+  };
+
+  if (isLoading) return (
+    <div className="flex h-screen items-center justify-center">
+      <Loader2 className="h-10 w-10 animate-spin text-red-600" />
+    </div>
+  );
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">
-            Restaurant list
-          </h1>
-          <p className="text-xs text-slate-500">
-            Owner-only view of all branches and assigned managers.
-          </p>
-        </div>
+    <div className="container mx-auto p-6 max-w-md">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">My Restaurants</h1>
         <button
-          type="button"
-          onClick={handleOpenPanel}
-          className="inline-flex items-center rounded-lg bg-[#C3110C] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#a30e09]"
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
         >
-          Add restaurant
+          <Plus className="h-4 w-4" /> Add
         </button>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-2 text-left font-medium">
-                  Restaurant
-                </th>
-                <th className="px-4 py-2 text-left font-medium">
-                  Location
-                </th>
-                <th className="px-4 py-2 text-right font-medium">
-                  Revenue
-                </th>
-                <th className="px-4 py-2 text-left font-medium">
-                  Manager
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {restaurants.map((rest) => (
-                <tr
-                  key={rest.id}
-                  className="cursor-pointer hover:bg-slate-50"
-                  onClick={() => handleRowClick(rest)}
-                >
-                  <td className="px-4 py-2 text-slate-900">
-                    {rest.name}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {rest.location}
-                  </td>
-                  <td className="px-4 py-2 text-right text-slate-900">
-                    ${rest.revenue.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {rest.manager}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 p-3 rounded mb-4">
+          <AlertCircle className="h-4 w-4" /> {error}
         </div>
-      </div>
+      )}
 
-      <RightPanel isOpen={isPanelOpen} onClose={handleClosePanel}>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <h3 className="text-sm font-semibold text-slate-900">
-              {editingId ? 'Edit restaurant' : 'Add restaurant'}
-            </h3>
-            <p className="mt-1 text-xs text-slate-500">
-              Create a new branch and assign a manager.
-            </p>
+      {/* Restaurants List */}
+      {restaurants.length === 0 ? (
+        <p className="text-center text-gray-500">No restaurants found. Add your first restaurant!</p>
+      ) : (
+        <div className="space-y-4">
+          {restaurants.map(r => (
+            <div key={r.id} className="flex items-center gap-4 bg-white shadow rounded-lg p-3 hover:shadow-md transition">
+              <img
+                src={r.bannerImage || '/default-image.png'}
+                alt={r.name}
+                className="w-20 h-20 object-cover rounded-lg"
+              />
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg">{r.name}</h3>
+                {r.tagline && <p className="text-red-600 text-sm">{r.tagline}</p>}
+                {r.description && !r.tagline && <p className="text-gray-500 text-sm">{r.description}</p>}
+                <p className="text-xs text-gray-400 mt-1">{r.location || 'No address'} • {r.contactInfo || 'No phone'}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={handleCloseModal} />
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md z-10 p-6 overflow-auto max-h-[90vh]">
+            <h2 className="text-xl font-semibold mb-4">Add New Restaurant</h2>
+            {formError && <p className="text-red-600 mb-4">{formError}</p>}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input type="text" name="name" placeholder="Restaurant Name *" value={formData.name} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
+              <input type="text" name="tagline" placeholder="Offer / Tagline" value={formData.tagline} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" />
+              <input type="text" name="description" placeholder="Description" value={formData.description} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" />
+              <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" />
+              <input type="text" name="contactInfo" placeholder="Contact Info" value={formData.contactInfo} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" />
+
+              <div className="border-2 border-dashed p-4 rounded-lg text-center relative">
+                {previewImage ? (
+                  <>
+                    <img src={previewImage} alt="Preview" className="w-full h-36 object-cover rounded-lg" />
+                    <button type="button" onClick={removeImage} className="absolute top-2 right-2 bg-white p-1 rounded-full">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <ImagePlus className="h-6 w-6 mx-auto mb-1 text-gray-400" />
+                    <p className="text-sm text-gray-500">Click to upload banner</p>
+                  </>
+                )}
+                <input type="file" id="bannerImage" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+              </div>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button type="button" onClick={handleCloseModal} className="px-4 py-2 border rounded-lg">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">{isSubmitting ? 'Creating...' : 'Create'}</button>
+              </div>
+            </form>
           </div>
-
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label
-                htmlFor="name"
-                className="block text-xs font-medium text-slate-600"
-              >
-                Restaurant name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formValues.name}
-                onChange={handleChange}
-                className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="revenue"
-                className="block text-xs font-medium text-slate-600"
-              >
-                Revenue (optional)
-              </label>
-              <input
-                id="revenue"
-                name="revenue"
-                type="number"
-                min="0"
-                value={formValues.revenue}
-                onChange={handleChange}
-                className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="location"
-                className="block text-xs font-medium text-slate-600"
-              >
-                Location
-              </label>
-              <input
-                id="location"
-                name="location"
-                type="text"
-                required
-                value={formValues.location}
-                onChange={handleChange}
-                className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="manager"
-                className="block text-xs font-medium text-slate-600"
-              >
-                Manager
-              </label>
-              <input
-                id="manager"
-                name="manager"
-                type="text"
-                required
-                value={formValues.manager}
-                onChange={handleChange}
-                className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
-              />
-            </div>
-          </div>
-
-          <div className="pt-2 flex justify-end gap-2">
-            {editingId != null && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleClosePanel}
-              className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="rounded-md bg-[#C3110C] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#a30e09]"
-            >
-              Save
-            </button>
-          </div>
-        </form>
-      </RightPanel>
-    </section>
+        </div>
+      )}
+    </div>
   );
-}
+};
 
 export default RestaurantList;
-
