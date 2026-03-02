@@ -6,7 +6,6 @@ import {
   Boxes,
   Users,
   BarChart3,
-  Building2,
   UserCircle,
   LogOut,
 } from 'lucide-react';
@@ -16,11 +15,6 @@ const baseItemClasses =
 
 function AdminSidebar() {
   const navigate = useNavigate();
-
-  const role =
-    typeof window !== 'undefined'
-      ? window.localStorage.getItem('role')
-      : null;
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
@@ -63,12 +57,6 @@ function AdminSidebar() {
     },
   ];
 
-  const ownerOnlyItem = {
-    label: 'Restaurant List',
-    icon: Building2,
-    to: '/admin/restaurants',
-  };
-
   return (
     <div className="flex h-full flex-col justify-between bg-transparent text-white">
       {/* Top section */}
@@ -91,14 +79,8 @@ function AdminSidebar() {
             >
               {({ isActive }) => (
                 <>
-                  <Icon
-                    className={`h-4 w-4 ${
-                      isActive ? 'text-[#C3110C]' : ''
-                    }`}
-                  />
-                  <span
-                    className={isActive ? 'text-[#C3110C]' : undefined}
-                  >
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-[#C3110C]' : ''}`} />
+                  <span className={isActive ? 'text-[#C3110C]' : undefined}>
                     {item.label}
                   </span>
                 </>
@@ -106,36 +88,6 @@ function AdminSidebar() {
             </NavLink>
           );
         })}
-
-        {/* Owner-only item */}
-        {role === 'owner' && (
-          <NavLink
-            to={ownerOnlyItem.to}
-            className={({ isActive }) =>
-              [
-                baseItemClasses,
-                isActive
-                  ? 'bg-white text-[#C3110C]'
-                  : 'text-white/80 hover:bg-[#E6501B] hover:text-white',
-              ].join(' ')
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <Building2
-                  className={`h-4 w-4 ${
-                    isActive ? 'text-[#C3110C]' : ''
-                  }`}
-                />
-                <span
-                  className={isActive ? 'text-[#C3110C]' : undefined}
-                >
-                  {ownerOnlyItem.label}
-                </span>
-              </>
-            )}
-          </NavLink>
-        )}
       </nav>
 
       {/* Bottom section */}
@@ -169,4 +121,3 @@ function AdminSidebar() {
 }
 
 export default AdminSidebar;
-

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthCard from "@/pages/login_registration/AuthCard";
+
 import {
   fetchOwnerRestaurants,
   createRestaurant,
@@ -23,9 +25,9 @@ const RestaurantList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     tagline: "",
@@ -55,15 +57,24 @@ const RestaurantList = () => {
     }
   };
 
-  const handleViewRestaurant = (id) => {
-    navigate(`/restaurants/${id}`);
-  };
+  const handleViewRestaurant = (r) => {
+  // save selected restaurant ID + tenant to localStorage for API headers
+  try {
+    localStorage.setItem("restaurantId", r.id);
+    if (r.tenantId) {
+      localStorage.setItem('tenantId', r.tenantId);
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  navigate("/admin", { replace: true });
+};
 
   const handleDeleteRestaurant = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this restaurant? This action cannot be undone."
+      "Are you sure you want to delete this restaurant?"
     );
-
     if (!confirmDelete) return;
 
     try {
@@ -140,92 +151,105 @@ const RestaurantList = () => {
     setFormError(null);
   };
 
+  /* =========================
+     LOADING SCREEN
+  ========================== */
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-100">
         <Loader2 className="h-10 w-10 animate-spin text-red-600" />
       </div>
     );
   }
 
+  /* =========================
+     MAIN RETURN (FULL WIDTH)
+  ========================== */
   return (
-    <div className="w-full p-6 min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6 max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold">My Restaurants</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+    <div className="min-h-screen bg-neutral-100 px-6 py-10">
+      <div className="w-full max-w-6xl mx-auto">
+        <AuthCard
+          title="My Restaurants"
+          description="Manage your restaurant listings below."
+          className="w-full"
         >
-          <Plus className="h-4 w-4" /> Add
-        </button>
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 p-3 rounded mb-4 max-w-7xl mx-auto">
-          <AlertCircle className="h-4 w-4" /> {error}
-        </div>
-      )}
-
-      {/* Restaurant List */}
-      <div className="max-w-7xl mx-auto space-y-4">
-        {restaurants.length === 0 ? (
-          <p className="text-center text-gray-500">
-            No restaurants found. Add your first restaurant!
-          </p>
-        ) : (
-          restaurants.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center justify-between bg-white shadow rounded-lg p-4"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={r.bannerImage || "/default-image.png"}
-                  alt={r.name}
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
-                <div>
-                  <h3 className="font-semibold text-lg">{r.name}</h3>
-                  {r.tagline && (
-                    <p className="text-red-600 text-sm">{r.tagline}</p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">
-                    {r.location || "No address"} •{" "}
-                    {r.contactInfo || "No phone"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleViewRestaurant(r.id)}
-                  className="flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-100"
-                >
-                  <Eye className="h-4 w-4" /> View
-                </button>
-
-                <button
-                  onClick={() => handleDeleteRestaurant(r.id)}
-                  className="flex items-center gap-1 px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  <Trash2 className="h-4 w-4" /> Delete
-                </button>
-              </div>
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 p-3 rounded mb-4">
+              <AlertCircle className="h-4 w-4" />
+              {error}
             </div>
-          ))
-        )}
+          )}
+
+          {/* Add Button */}
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Add Restaurant
+            </button>
+          </div>
+
+          {/* Restaurant List */}
+          {restaurants.length === 0 ? (
+            <p className="text-center text-gray-500">
+              No restaurants found. Add your first restaurant!
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+              {restaurants.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between bg-white border rounded-lg p-4 hover:shadow-sm transition"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={r.bannerImage || "/default-image.png"}
+                      alt={r.name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-base">{r.name}</h3>
+                      {r.tagline && (
+                        <p className="text-red-600 text-sm">{r.tagline}</p>
+                      )}
+                      <p className="text-sm text-gray-400">
+                        {r.location || "No address"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleViewRestaurant(r.id)}
+                      className="p-2 border rounded-lg hover:bg-gray-100"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteRestaurant(r.id)}
+                      className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </AuthCard>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL remains EXACTLY SAME as your original */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={handleCloseModal}
           />
-
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md z-10 p-6 max-h-[90vh] overflow-auto">
             <h2 className="text-xl font-semibold mb-4">
               Add New Restaurant
@@ -282,7 +306,6 @@ const RestaurantList = () => {
                 className="w-full px-3 py-2 border rounded-lg"
               />
 
-              {/* Image Upload */}
               <div className="border-2 border-dashed p-4 rounded-lg text-center relative">
                 {previewImage ? (
                   <>
@@ -307,6 +330,7 @@ const RestaurantList = () => {
                     </p>
                   </>
                 )}
+
                 <input
                   type="file"
                   accept="image/*"

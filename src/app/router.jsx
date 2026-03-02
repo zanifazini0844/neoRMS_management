@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import AdminLayout from '../shared/adminlayout/AdminLayout';
@@ -9,7 +8,7 @@ import Inventory from '../pages/inventory/Inventory';
 import Staff from '../pages/staff/Staff';
 import Analytics from '../pages/analytics/Analytics';
 import Profile from '../pages/profile/Profile';
-import RestaurantList from '../pages/restaurant/RestaurantList';
+import RestaurantList from "../pages/restaurant/RestaurantList";
 import Unauthorized from '../pages/auth/Unauthorized';
 import { InventoryProvider } from '../pages/inventory/InventoryContext';
 import { SearchProvider } from '../shared/search/SearchContext';
@@ -30,7 +29,14 @@ function AppRouter() {
 
         {/* Unauthorized page */}
         <Route path="/unauthorized" element={<Unauthorized />} />
-
+        <Route
+          path="/owner/restaurants"
+          element={
+            <ProtectedRoute allowedRoles={["owner"]}>
+              <RestaurantList />
+            </ProtectedRoute>
+          }
+        />
         {/* Protected admin area */}
         <Route
           path="/admin"
@@ -51,7 +57,6 @@ function AppRouter() {
           <Route path="staff" element={<Staff />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="restaurants" element={<RestaurantList />} />
           <Route path="search" element={<SearchResults />} />
         </Route>
 

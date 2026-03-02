@@ -12,6 +12,16 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
+  // Add tenant header if available
+  try {
+    const tenantId = localStorage.getItem("tenantId");
+    if (tenantId) {
+      config.headers["x-tenant-id"] = tenantId;
+    }
+  } catch (e) {
+    // ignore
+  }
+
   return config;
 });
 

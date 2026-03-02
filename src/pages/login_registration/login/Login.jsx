@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthCard from "../../../pages/login_registration/AuthCard";
 import AuthForm from "../../../pages/login_registration/AuthForm";
-import { loginManagement } from "@/services/loginApi"; 
+import { loginManagement } from "@/services/loginApi";
 
 export default function ManagementLogin() {
   const navigate = useNavigate();
@@ -20,13 +20,32 @@ export default function ManagementLogin() {
       // Save to localStorage
       localStorage.setItem("authToken", accessToken);
       localStorage.setItem("authRole", user.role);
-      localStorage.setItem("role", String(user.role).toLowerCase());
+
+      const role = String(user.role).toLowerCase(); // ✅ FIXED
+      localStorage.setItem("role", role);
+
       if (user?.fullName || user?.name) {
         localStorage.setItem("userName", user.fullName || user.name);
       }
 
-      // Navigate after successful login
-      navigate("/admin", { replace: true });
+      // =========================
+      // ROLE BASED REDIRECTION
+      // =========================
+
+      if (role === "owner") {
+        navigate("/owner/restaurants", { replace: true });
+      } 
+      
+      else if (role === "manager") {
+       
+          navigate("/admin", { replace: true });
+        
+      } 
+      
+      else {
+        navigate("/", { replace: true });
+      }
+
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Login failed");
     } finally {
@@ -35,7 +54,10 @@ export default function ManagementLogin() {
   };
 
   return (
-    <AuthCard title="Welcome back" description="Sign in to manage your restaurant operations.">
+    <AuthCard
+      title="Welcome back"
+      description="Sign in to manage your restaurant operations."
+    >
       <AuthForm
         type="login"
         onSubmit={handleLogin}
@@ -47,7 +69,7 @@ export default function ManagementLogin() {
             New owner?{" "}
             <button
               className="text-red-500 hover:underline"
-              onClick={() => navigate('/auth/sign-up')}
+              onClick={() => navigate("/auth/sign-up")}
             >
               Create an owner account
             </button>
