@@ -44,13 +44,33 @@ const RestaurantList = () => {
     loadRestaurants();
   }, []);
 
+  // helper normalizes a restaurant object
+  const normalizeRestaurant = (r) => {
+    if (!r || typeof r !== 'object') return r;
+    const id = r.id || r._id || r.restaurantId || r.restaurant_id || r.restaurant?.id;
+    const tenant = r.tenantId || r.tenant_id || r.restaurant?.tenantId;
+    return { ...r, id, tenantId: tenant };
+  };
+
   const loadRestaurants = async () => {
     try {
       setIsLoading(true);
       const data = await fetchOwnerRestaurants();
-      setRestaurants(data);
+      console.log('[RestaurantList] fetched restaurants raw:', data);
+      const normalized = Array.isArray(data)
+        ? data.map(normalizeRestaurant)
+        : data
+        ? normalizeRestaurant(data)
+        : [];
+      console.log('[RestaurantList] normalized restaurants:', normalized);
+      setRestaurants(normalized);
+      // update localStorage cache so it matches backend
+      try {
+        localStorage.setItem('ownedRestaurants', JSON.stringify(normalized));
+      } catch {}
       setError(null);
-    } catch {
+    } catch (err) {
+      console.error('loadRestaurants error', err);
       setError("Failed to load restaurants.");
     } finally {
       setIsLoading(false);
@@ -58,14 +78,40 @@ const RestaurantList = () => {
   };
 
   const handleViewRestaurant = (r) => {
+  console.log('[RestaurantList] clicked restaurant (normalized):', r);
   // save selected restaurant ID + tenant to localStorage for API headers
   try {
-    localStorage.setItem("restaurantId", r.id);
+    const id = r?.id;
+    console.log('[RestaurantList] id value:', id);
+    if (!id) {
+      console.error('[RestaurantList] restaurant object missing id', r);
+      return;
+    }
+    localStorage.setItem("restaurantId", id);
     if (r.tenantId) {
       localStorage.setItem('tenantId', r.tenantId);
     }
+    // also persist full restaurant object for convenience
+    localStorage.setItem('currentRestaurant', JSON.stringify(r));
+
+    // verify immediately
+    console.log('[RestaurantList] localStorage after set:', {
+      restaurantId: localStorage.getItem('restaurantId'),
+      tenantId: localStorage.getItem('tenantId'),
+    });
+
+    // update cached ownedRestaurants list so future lookups reflect the last selection
+    try {
+      const cached = JSON.parse(localStorage.getItem('ownedRestaurants') || '[]');
+      const updated = Array.isArray(cached)
+        ? cached.map((rest) => (String(rest.id) === String(id) ? r : rest))
+        : cached;
+      localStorage.setItem('ownedRestaurants', JSON.stringify(updated));
+    } catch (err) {
+      console.error('[RestaurantList] cache update error', err);
+    }
   } catch (e) {
-    // ignore
+    console.error('[RestaurantList] error storing restaurant', e);
   }
 
   navigate("/admin", { replace: true });
@@ -127,7 +173,9 @@ const RestaurantList = () => {
       );
 
       const newRestaurant = await createRestaurant(payload);
-      setRestaurants((prev) => [...prev, newRestaurant]);
+      const normalizedNew = normalizeRestaurant(newRestaurant);
+      console.log('[RestaurantList] created restaurant normalized:', normalizedNew);
+      setRestaurants((prev) => [...prev, normalizedNew]);
 
       handleCloseModal();
     } catch {
@@ -223,7 +271,7 @@ const RestaurantList = () => {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleViewRestaurant(r.id)}
+                      onClick={() => handleViewRestaurant(r)}
                       className="p-2 border rounded-lg hover:bg-gray-100"
                     >
                       <Eye className="h-4 w-4" />

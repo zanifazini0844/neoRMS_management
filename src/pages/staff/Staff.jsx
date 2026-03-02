@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import RightPanel from '../../shared/panels/RightPanel';
-import { getStaff, createStaff, updateStaff, deleteStaff } from '@/services/staffapi';
+import { getStaff, createStaff, updateStaff, deleteStaff, fetchAndStoreUserRestaurant } from '@/services/staffapi';
 
 function Staff() {
   const [staff, setStaff] = useState([]);
@@ -8,6 +8,7 @@ function Staff() {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [restaurantNotFound, setRestaurantNotFound] = useState(false);
   const [formValues, setFormValues] = useState({
     name: '',
     phone: '',
@@ -61,13 +62,47 @@ function Staff() {
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Ensure restaurantId is available, fetch if needed
+  useEffect(() => {
+    const ensureRestaurantId = async () => {
+      console.log('[Staff] Component mounted, checking restaurantId...');
+      const restaurantId = localStorage.getItem('restaurantId');
+      console.log('[Staff] restaurantId from localStorage:', restaurantId);
+      console.log('[Staff] All localStorage keys:', Object.keys(localStorage));
+      
+      if (!restaurantId) {
+        console.warn('[Staff] restaurantId not found, attempting to fetch from user data');
+        const fetchedId = await fetchAndStoreUserRestaurant();
+        console.log('[Staff] Fetched restaurantId:', fetchedId);
+        
+        if (!fetchedId) {
+          console.error('[Staff] Failed to fetch restaurantId');
+          setRestaurantNotFound(true);
+          setError('No restaurant assigned to this account.');
+        } else {
+          console.log('[Staff] Successfully fetched and stored restaurantId');
+        }
+      } else {
+        console.log('[Staff] restaurantId already available');
+      }
+    };
+
+    ensureRestaurantId();
+  }, []);
+
   const fetchStaffList = useCallback(async () => {
+    console.log('[Staff] fetchStaffList called');
+    console.log('[Staff] restaurantNotFound:', restaurantNotFound);
+    console.log('[Staff] restaurantId from localStorage:', localStorage.getItem('restaurantId'));
+    
     setLoading(true);
     setError(null);
     try {
       const data = await getStaff();
+      console.log('[Staff] Fetched staff data:', data);
       setStaff(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error('[Staff] Error fetching staff:', err);
       setError(err?.message || 'Failed to load staff');
     } finally {
       setLoading(false);
@@ -75,8 +110,11 @@ function Staff() {
   }, []);
 
   useEffect(() => {
-    fetchStaffList();
-  }, [fetchStaffList]);
+    // Only fetch staff list if restaurantId exists
+    if (!restaurantNotFound) {
+      fetchStaffList();
+    }
+  }, [fetchStaffList, restaurantNotFound]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,6 +161,15 @@ function Staff() {
 
   return (
     <section className="space-y-6">
+      {/* Error message if restaurant not found */}
+      {restaurantNotFound && (
+        <div className="rounded-lg border border-red-300 bg-red-50 p-4">
+          <p className="text-sm font-medium text-red-800">
+            ⚠️ No restaurant assigned to this account. Please contact your administrator.
+          </p>
+        </div>
+      )}
+
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4 md:max-w-xl">
         <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -142,7 +189,12 @@ function Staff() {
         <button
           type="button"
           onClick={handleOpenPanel}
-          className="inline-flex items-center rounded-lg bg-[#C3110C] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#a30e09]"
+          disabled={restaurantNotFound}
+          className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium text-white ${
+            restaurantNotFound
+              ? 'bg-slate-400 cursor-not-allowed'
+              : 'bg-[#C3110C] hover:bg-[#a30e09]'
+          }`}
         >
           Add staff
         </button>
