@@ -107,6 +107,9 @@ export const getStaff = async () => {
 export const createStaff = async (payload) => {
   try {
     const restaurantId = getRestaurantId();
+    console.log('[createStaff] Starting creation with payload:', payload);
+    console.log('[createStaff] restaurantId:', restaurantId);
+    
     if (!restaurantId) {
       throw new Error('No restaurant selected. Please select a restaurant first.');
     }
@@ -138,10 +141,15 @@ export const createStaff = async (payload) => {
       endpoint = '/user/staff/chef';
     }
 
+    console.log('[createStaff] Calling endpoint:', endpoint);
+    console.log('[createStaff] Request body:', body);
+    
     const response = await api.post(endpoint, body);
+    console.log('[createStaff] Success response:', response.data);
+    
     return response.data?.data;
   } catch (err) {
-    console.error('Failed to create staff:', err);
+    console.error('[createStaff] Failed to create staff:', err);
     throw new Error(err?.response?.data?.message || err?.message || 'Failed to create staff');
   }
 };
