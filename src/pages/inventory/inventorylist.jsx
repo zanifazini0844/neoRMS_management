@@ -3,9 +3,11 @@ import { useLocation } from 'react-router-dom';
 import RightPanel from '../../shared/panels/RightPanel';
 import { useInventory } from './InventoryContext';
 import { useSearch } from '../../shared/search/SearchContext';
+import { Trash2 } from 'lucide-react';
 
 function InventoryList() {
-  const { inventoryItems, addItem, updateItem } = useInventory();
+  const { inventoryItems, addItem, updateItem, deleteItem, isLoading, error } =
+    useInventory();
   const { searchQuery, setSearchQuery } = useSearch();
   const location = useLocation();
 
@@ -15,14 +17,11 @@ function InventoryList() {
   const [formValues, setFormValues] = useState({
     name: '',
     quantity: '',
-    price: '',
     threshold: '',
   });
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [nameFilter, setNameFilter] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
 
   // read query param on mount/update so deep links and suggestion clicks work
   useEffect(() => {
@@ -37,8 +36,6 @@ function InventoryList() {
   const resetFilters = () => {
     setStatusFilter('all');
     setNameFilter('');
-    setMinPrice('');
-    setMaxPrice('');
   };
 
   // Highlight search match
@@ -66,8 +63,6 @@ function InventoryList() {
   const filteredItems = useMemo(() => {
     const qGlobal = searchQuery.trim().toLowerCase();
     const qLocal = nameFilter.trim().toLowerCase();
-    const min = minPrice ? Number(minPrice) : null;
-    const max = maxPrice ? Number(maxPrice) : null;
 
     return inventoryItems.filter((item) => {
       if (statusFilter !== 'all' && item.status !== statusFilter) {
@@ -78,9 +73,6 @@ function InventoryList() {
       if (qLocal && !name.includes(qLocal)) return false;
       if (qGlobal && !name.includes(qGlobal)) return false;
 
-      if (min != null && item.price < min) return false;
-      if (max != null && item.price > max) return false;
-
       return true;
     });
   }, [
@@ -88,8 +80,6 @@ function InventoryList() {
     statusFilter,
     nameFilter,
     searchQuery,
-    minPrice,
-    maxPrice,
   ]);
 
   // Open add panel
@@ -98,7 +88,6 @@ function InventoryList() {
     setFormValues({
       name: '',
       quantity: '',
-      price: '',
       threshold: '',
     });
     setIsPanelOpen(true);
@@ -110,7 +99,6 @@ function InventoryList() {
     setFormValues({
       name: item.name,
       quantity: String(item.quantity),
-      price: String(item.price),
       threshold: String(item.threshold),
     });
     setIsPanelOpen(true);
@@ -125,34 +113,89 @@ function InventoryList() {
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const quantity = Number(formValues.quantity);
-    const price = Number(formValues.price);
-    const threshold = Number(formValues.threshold);
-
-    if (editingId != null) {
-      updateItem(editingId, {
-        name: formValues.name,
-        quantity,
-        price,
-        threshold,
-      });
-    } else {
-      addItem({
-        name: formValues.name,
-        quantity,
-        price,
-        threshold,
-      });
+    // Validate form values before sending
+    if (!formValues.name || formValues.name.trim() === '') {
+      window.alert('Please enter a product name.');
+      return;
     }
 
-    setIsPanelOpen(false);
+    const quantity = Number(formValues.quantity);
+    const threshold = Number(formValues.threshold);
+
+    if (isNaN(quantity) || quantity < 0) {
+      window.alert('Quantity must be a valid non-negative number.');
+      return;
+    }
+
+    if (isNaN(threshold) || threshold < 0) {
+      window.alert('Threshold must be a valid non-negative number.');
+      return;
+    }
+
+    try {
+      if (editingId != null) {
+        await updateItem(editingId, {
+          name: formValues.name,
+          quantity,
+          threshold,
+        });
+      } else {
+        await addItem({
+          name: formValues.name,
+          quantity,
+          threshold,
+        });
+      }
+      setIsPanelOpen(false);
+    } catch (err) {
+      console.error('failed to save inventory item', err);
+      const errorMsg = err?.message || String(err);
+      window.alert('Error: ' + errorMsg);
+    }
   };
 
   return (
     <section className="space-y-6">
+      {/* Error Alert */}
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p className="text-sm text-red-800">
+            <strong>Error loading inventory:</strong> {error}
+          </p>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && inventoryItems.length === 0 && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin">
+            <svg
+              className="h-8 w-8 text-slate-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </div>
+          <p className="ml-3 text-slate-500">Loading inventory...</p>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold text-slate-900">
@@ -191,7 +234,7 @@ function InventoryList() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -211,34 +254,27 @@ function InventoryList() {
             className="rounded-md border border-slate-200 px-2.5 py-1.5 text-sm"
           />
 
-          <input
-            type="number"
-            placeholder="Min price"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-            className="rounded-md border border-slate-200 px-2.5 py-1.5 text-sm"
-          />
-
-          <input
-            type="number"
-            placeholder="Max price"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            className="rounded-md border border-slate-200 px-2.5 py-1.5 text-sm"
-          />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* Table or Empty State */}
+      {!isLoading && inventoryItems.length === 0 ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
+          <p className="text-slate-500">
+            No inventory items found. Click "Add Item" to create one.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-right">Quantity</th>
-                <th className="px-4 py-2 text-right">Price</th>
+                {/* price column removed */}
                 <th className="px-4 py-2 text-left">Status</th>
+                <th className="px-4 py-2 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -257,9 +293,6 @@ function InventoryList() {
                   <td className="px-4 py-2 text-right">
                     {item.quantity}
                   </td>
-                  <td className="px-4 py-2 text-right">
-                    ${item.price.toFixed(2)}
-                  </td>
                   <td className="px-4 py-2">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -273,12 +306,34 @@ function InventoryList() {
                       {item.status}
                     </span>
                   </td>
+                  <td className="px-4 py-2 text-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (
+                          window.confirm(
+                            'Are you sure you want to delete this item?'
+                          )
+                        ) {
+                          deleteItem({ id: item.id, restaurantId: item.restaurantId })
+                            .catch((err) => {
+                              console.error('delete failed', err);
+                              window.alert('Failed to delete: ' + err?.message);
+                            });
+                        }
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Add / Update Panel */}
       <RightPanel isOpen={isPanelOpen} onClose={handleClosePanel}>
@@ -287,7 +342,7 @@ function InventoryList() {
             {editingId ? 'Update Item' : 'Add Item'}
           </h3>
 
-          {['name', 'quantity', 'price', 'threshold'].map((field) => (
+          {['name', 'quantity', 'threshold'].map((field) => (
             <input
               key={field}
               name={field}

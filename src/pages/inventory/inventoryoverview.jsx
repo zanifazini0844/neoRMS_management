@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 function InventoryOverview() {
-  const { inventoryItems } = useInventory();
+  const { inventoryItems, isLoading } = useInventory();
   const { searchQuery } = useSearch();
 
   const matchedCount = useMemo(() => {
@@ -45,8 +45,37 @@ function InventoryOverview() {
 
   return (
     <section className="min-h-[80vh] flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 px-6 py-12">
-      {/* Page Title */}
-      <div className="text-center mb-12">
+      {/* Loading State */}
+      {isLoading && inventoryItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center">
+          <div className="animate-spin mb-4">
+            <svg
+              className="h-12 w-12 text-slate-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </div>
+          <p className="text-slate-500">Loading inventory data...</p>
+        </div>
+      ) : (
+        <>
+          {/* Page Title */}
+          <div className="text-center mb-12">
         <h1 className="text-3xl font-bold text-slate-900">
           Inventory Overview
         </h1>
@@ -66,42 +95,44 @@ function InventoryOverview() {
             </Link>
           </p>
         )}
-      </div>
+          </div>
 
-      {/* Summary Cards: 2 rows x 2 columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-4xl">
-        <Card
-          title="Total Products"
-          value={summary.totalProducts}
-          icon={Package}
-          iconColor="text-blue-600"
-          bgColor="bg-blue-50"
-        />
+          {/* Summary Cards: 2 rows x 2 columns */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-4xl">
+            <Card
+              title="Total Products"
+              value={summary.totalProducts}
+              icon={Package}
+              iconColor="text-blue-600"
+              bgColor="bg-blue-50"
+            />
 
-        <Card
-          title="Top Used Ingredient"
-          value={summary.topUsedName}
-          icon={TrendingUp}
-          iconColor="text-emerald-600"
-          bgColor="bg-emerald-50"
-        />
+            <Card
+              title="Top Used Ingredient"
+              value={summary.topUsedName}
+              icon={TrendingUp}
+              iconColor="text-emerald-600"
+              bgColor="bg-emerald-50"
+            />
 
-        <Card
-          title="Low Stock"
-          value={summary.lowStock}
-          icon={AlertTriangle}
-          iconColor="text-amber-600"
-          bgColor="bg-amber-50"
-        />
+            <Card
+              title="Low Stock"
+              value={summary.lowStock}
+              icon={AlertTriangle}
+              iconColor="text-amber-600"
+              bgColor="bg-amber-50"
+            />
 
-        <Card
-          title="Stock Out"
-          value={summary.stockOut}
-          icon={XCircle}
-          iconColor="text-red-600"
-          bgColor="bg-red-50"
-        />
-      </div>
+            <Card
+              title="Stock Out"
+              value={summary.stockOut}
+              icon={XCircle}
+              iconColor="text-red-600"
+              bgColor="bg-red-50"
+            />
+          </div>
+        </>
+      )}
     </section>
   );
 }

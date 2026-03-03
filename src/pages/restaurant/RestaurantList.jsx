@@ -5,7 +5,6 @@ import AuthCard from "@/pages/login_registration/AuthCard";
 import {
   fetchOwnerRestaurants,
   createRestaurant,
-  deleteRestaurant,
 } from "@/services/restaurant/restaurantApi";
 
 import {
@@ -15,7 +14,6 @@ import {
   X,
   ImagePlus,
   Eye,
-  Trash2,
 } from "lucide-react";
 
 const RestaurantList = () => {
@@ -117,19 +115,7 @@ const RestaurantList = () => {
   navigate("/admin", { replace: true });
 };
 
-  const handleDeleteRestaurant = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this restaurant?"
-    );
-    if (!confirmDelete) return;
 
-    try {
-      await deleteRestaurant(id);
-      setRestaurants((prev) => prev.filter((r) => r.id !== id));
-    } catch {
-      alert("Failed to delete restaurant.");
-    }
-  };
 
   const handleInputChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -275,13 +261,6 @@ const RestaurantList = () => {
                       className="p-2 border rounded-lg hover:bg-gray-100"
                     >
                       <Eye className="h-4 w-4" />
-                    </button>
-
-                    <button
-                      onClick={() => handleDeleteRestaurant(r.id)}
-                      className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

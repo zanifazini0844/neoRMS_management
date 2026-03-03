@@ -191,12 +191,18 @@ function Staff() {
 
       if (editingId != null) {
         const updated = await updateStaff(editingId, payload);
+        const normalized = updated
+          ? { ...updated, name: updated.name || updated.fullName || payload.name }
+          : { ...payload, id: editingId };
         setStaff((prev) =>
-          prev.map((m) => (m.id === editingId ? updated || { ...m, ...payload } : m))
+          prev.map((m) => (m.id === editingId ? normalized : m))
         );
       } else {
         const created = await createStaff(payload);
-        setStaff((prev) => [...prev, created || { ...payload, id: Date.now(), status: 'Active' }]);
+        const normalized = created
+          ? { ...created, name: created.name || created.fullName || payload.name }
+          : { ...payload, id: Date.now(), status: 'Active' };
+        setStaff((prev) => [...prev, normalized]);
       }
 
       setIsPanelOpen(false);
