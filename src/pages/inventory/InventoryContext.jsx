@@ -1,42 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { getRestaurantInventory } from '@/services/inventoryapi';
 
 const InventoryContext = createContext(null);
 
-const INITIAL_ITEMS = [
-  {
-    id: 1,
-    name: 'Tomato',
-    quantity: 50,
-    price: 0.5,
-    threshold: 20,
-    usedCount: 300,
-  },
-  {
-    id: 2,
-    name: 'Cheese',
-    quantity: 10,
-    price: 1.2,
-    threshold: 15,
-    usedCount: 250,
-  },
-  {
-    id: 3,
-    name: 'Olive Oil',
-    quantity: 0,
-    price: 5.0,
-    threshold: 5,
-    usedCount: 150,
-  },
-  {
-    id: 4,
-    name: 'Basil',
-    quantity: 5,
-    price: 0.2,
-    threshold: 10,
-    usedCount: 100,
-  },
-];
+// each inventory item is retrieved from the backend API; the
+// INITIAL_ITEMS array served only as a placeholder during early
+// development.  We now fetch the real list based on the selected
+// restaurant.
+const INITIAL_ITEMS = [];
 
 function computeStatus(quantity, threshold) {
   if (quantity === 0) return 'out';
@@ -51,6 +23,33 @@ export function InventoryProvider({ children }) {
       status: computeStatus(item.quantity, item.threshold),
     }))
   );
+
+  // fetch real inventory from the server whenever the restaurant changes
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const data = await getRestaurantInventory();
+        if (!mounted) return;
+        const normalized = data.map((item) => ({
+          id: item.id || item.restaurantInventoryId || item._id,
+          name: item.name || item.ingredientName || '',
+          quantity: item.quantity || 0,
+          price: item.price || 0,
+          threshold: item.threshold || 0,
+          usedCount: item.usedCount || 0,
+          status: computeStatus(item.quantity || 0, item.threshold || 0),
+        }));
+        setInventoryItems(normalized);
+      } catch (err) {
+        console.warn('[InventoryContext] failed to load inventory', err);
+      }
+    }
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const addItem = ({ name, quantity, threshold, price }) => {
     setInventoryItems((prev) => {

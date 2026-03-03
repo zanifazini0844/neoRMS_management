@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import RightPanel from '../../shared/panels/RightPanel';
+import { useSearch } from '../../shared/search/SearchContext';
 import { getStaff, createStaff, updateStaff, deleteStaff, fetchAndStoreUserRestaurant } from '@/services/staffapi';
 
 function Staff() {
@@ -8,6 +10,8 @@ function Staff() {
   const canAssignManager = role === 'owner';
 
   const [staff, setStaff] = useState([]);
+  const location = useLocation();
+  const { searchQuery, setSearchQuery } = useSearch();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
@@ -31,6 +35,15 @@ function Staff() {
       { managers: 0, total: 0 }
     );
   }, [staff]);
+
+  const filteredStaff = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return staff;
+    return staff.filter((member) => {
+      const haystack = [member.name, member.email, member.role].join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [staff, searchQuery]);
 
   const handleOpenPanel = () => {
     const restaurantId = typeof window !== 'undefined' && window.localStorage.getItem('restaurantId');
@@ -68,6 +81,15 @@ function Staff() {
   };
 
   // Ensure restaurantId is available, fetch if needed
+  // sync query param into global search
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('query') || '';
+    if (q && q !== searchQuery) {
+      setSearchQuery(q);
+    }
+  }, [location.search, searchQuery, setSearchQuery]);
+
   useEffect(() => {
     const ensureRestaurantId = async () => {
       console.log('[Staff] Component mounted, checking restaurantId...');
@@ -196,7 +218,7 @@ function Staff() {
   };
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 bg-white p-4 rounded-lg">
       {/* Error message if restaurant not found */}
       {restaurantNotFound && (
         <div className="rounded-lg border border-red-300 bg-red-50 p-4">
@@ -208,20 +230,20 @@ function Staff() {
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4 md:max-w-xl">
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <p className="text-xs font-medium text-slate-500 uppercase">Total Managers</p>
+        <div className="rounded-xl border border-[#FFEBEB] bg-white p-4">
+          <p className="text-xs font-medium text-[#FF4D4F] uppercase">Total Managers</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900">{summary.managers}</p>
           {role !== 'owner' && <p className="mt-1 text-[11px] text-slate-400">Visible to owner only.</p>}
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <p className="text-xs font-medium text-slate-500 uppercase">Total Staff</p>
+        <div className="rounded-xl border border-[#FFEBEB] bg-white p-4">
+          <p className="text-xs font-medium text-[#FF4D4F] uppercase">Total Staff</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900">{summary.total}</p>
         </div>
       </div>
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-slate-900">Staff members</h2>
+        <h2 className="text-sm font-semibold text-[#FF4D4F]">Staff members</h2>
         <button
           type="button"
           onClick={handleOpenPanel}
@@ -229,7 +251,7 @@ function Staff() {
           className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium text-white ${
             restaurantNotFound
               ? 'bg-slate-400 cursor-not-allowed'
-              : 'bg-[#C3110C] hover:bg-[#a30e09]'
+              : 'bg-gradient-to-r from-[#FF7F7F] to-[#FFB3B3] hover:opacity-90'
           }`}
         >
           Add staff
@@ -241,8 +263,8 @@ function Staff() {
         {loading && <div className="p-4 text-sm text-slate-500">Loading staff...</div>}
         {error && <div className="p-4 text-sm text-red-600">Error: {error}</div>}
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+          <table className="min-w-full divide-y divide-[#FFECEC] text-[#2C2C2C]">
+            <thead className="bg-[#FFEBEB] text-xs uppercase text-[#FF4D4F]">
               <tr>
                 <th className="px-4 py-2 text-left font-medium">Name</th>
                 <th className="px-4 py-2 text-left font-medium">Email</th>
@@ -250,12 +272,12 @@ function Staff() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {staff.map((member) => (
-                <tr key={member.id} className="cursor-pointer hover:bg-slate-50" onClick={() => handleRowClick(member)}>
+              {filteredStaff.map((member) => (
+                <tr key={member.id} className="cursor-pointer hover:[background-color:rgba(255,77,79,0.1)]" onClick={() => handleRowClick(member)}>
                   <td className="px-4 py-2 text-slate-900 font-medium">{member.name}</td>
                   <td className="px-4 py-2 text-slate-700">{member.email}</td>
                   <td className="px-4 py-2 text-slate-700">
-                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#FFEBEB] text-[#FF4D4F]">
                       {member.role}
                     </span>
                   </td>
@@ -289,7 +311,7 @@ function Staff() {
               className={`w-full px-3 py-2 border rounded-lg text-sm ${
                 isViewOnly
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 focus:outline-none focus:border-red-500'
+                  : 'border-slate-200 focus:outline-none focus:border-[#FF4D4F]'
               }`}
               required
             />
@@ -308,7 +330,7 @@ function Staff() {
               className={`w-full px-3 py-2 border rounded-lg text-sm ${
                 isViewOnly
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 focus:outline-none focus:border-red-500'
+                  : 'border-slate-200 focus:outline-none focus:border-[#FF4D4F]'
               }`}
               required
             />
@@ -329,7 +351,7 @@ function Staff() {
               className={`w-full px-3 py-2 border rounded-lg text-sm ${
                 isViewOnly
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 focus:outline-none focus:border-red-500'
+                  : 'border-slate-200 focus:outline-none focus:border-[#FF4D4F]'
               }`}
               required={!editingId && !isViewOnly}
             />
@@ -346,7 +368,7 @@ function Staff() {
               className={`w-full px-3 py-2 border rounded-lg text-sm ${
                 isViewOnly
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 bg-white focus:outline-none focus:border-red-500'
+                  : 'border-slate-200 bg-white focus:outline-none focus:border-[#FF4D4F]'
               }`}
               required
             >
@@ -366,7 +388,7 @@ function Staff() {
                 <button
                   type="button"
                   onClick={handleClosePanel}
-                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                  className="flex-1 rounded-lg border border-[#FF4D4F] px-3 py-2 text-xs font-medium text-[#2C2C2C] hover:bg-[#FFF5F5] transition"
                 >
                   Close
                 </button>
@@ -392,14 +414,14 @@ function Staff() {
               <>
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700 transition"
+                  className="flex-1 rounded-lg bg-gradient-to-r from-[#FF7F7F] to-[#FFB3B3] px-3 py-2 text-xs font-medium text-white hover:opacity-90 transition"
                 >
                   {editingId ? 'Update' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={handleClosePanel}
-                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                  className="flex-1 rounded-lg border border-[#FF4D4F] px-3 py-2 text-xs font-medium text-[#2C2C2C] hover:bg-[#FFF5F5] transition"
                 >
                   Cancel
                 </button>

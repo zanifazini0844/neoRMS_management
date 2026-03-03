@@ -4,7 +4,8 @@ import AdminLayout from '../shared/adminlayout/AdminLayout';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Orders from '../pages/orders/Orders';
 import Menu from '../pages/menu/Menu';
-import Inventory from '../pages/inventory/Inventory';
+import InventoryOverview from "../pages/inventory/inventoryoverview";
+import InventoryList from "../pages/inventory/inventorylist";
 import Staff from '../pages/staff/Staff';
 import Analytics from '../pages/analytics/Analytics';
 import Profile from '../pages/profile/Profile';
@@ -18,7 +19,8 @@ import { authRoutes } from '../pages/login_registration/auth.routes';
 function AppRouter() {
   return (
     <BrowserRouter>
-      <Routes>
+      <SearchProvider>
+        <Routes>
          {authRoutes.map((route) => (
           <Route
             key={route.path}
@@ -43,9 +45,7 @@ function AppRouter() {
           element={
             <ProtectedRoute>
               <InventoryProvider>
-                <SearchProvider>
-                  <AdminLayout />
-                </SearchProvider>
+                <AdminLayout />
               </InventoryProvider>
             </ProtectedRoute>
           }
@@ -53,7 +53,11 @@ function AppRouter() {
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="menu" element={<Menu />} />
-          <Route path="inventory" element={<Inventory />} />
+          <Route path="inventory">
+          <Route index element={<InventoryOverview />} />
+          <Route path="overview" element={<InventoryOverview />} />
+          <Route path="list" element={<InventoryList />} />
+          </Route>
           <Route path="staff" element={<Staff />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="profile" element={<Profile />} />
@@ -64,9 +68,9 @@ function AppRouter() {
         <Route path="/" element={<Navigate to="/auth/sign-in" replace />} />
         <Route path="*" element={<Navigate to="/auth/sign-in" replace />} />
       </Routes>
+      </SearchProvider>
     </BrowserRouter>
   );
 }
 
 export default AppRouter;
-

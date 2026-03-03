@@ -112,26 +112,35 @@ function Profile() {
 
   const avatarLetter = (profile?.fullName || 'U').charAt(0).toUpperCase();
 
-  return (
-  <section className="min-h-screen bg-slate-50 p-6">
+ return (
+  <section className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 p-8">
+    
     {/* Profile Card */}
-    <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="max-w-5xl mx-auto backdrop-blur-xl bg-white/80 border border-white/40 shadow-2xl rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)]">
 
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-[#C3110C] to-red-700 p-8 flex flex-col sm:flex-row items-center gap-6">
-        <div className="h-24 w-24 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+      <div className="relative bg-gradient-to-r from-[#C3110C] via-red-600 to-rose-600 p-10 flex flex-col sm:flex-row items-center gap-8">
+
+        {/* Glow Effect */}
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-md"></div>
+
+        <div className="relative h-28 w-28 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-4xl font-bold text-white shadow-2xl">
           {avatarLetter}
         </div>
 
-        <div className="text-white text-center sm:text-left">
-          <h1 className="text-2xl font-semibold">{profile?.fullName}</h1>
-          <p className="text-sm opacity-90">{profile?.email}</p>
+        <div className="relative text-white text-center sm:text-left">
+          <h1 className="text-3xl font-semibold tracking-wide">
+            {profile?.fullName}
+          </h1>
+          <p className="text-sm opacity-90 mt-1">
+            {profile?.email}
+          </p>
         </div>
 
-        <div className="sm:ml-auto">
+        <div className="relative sm:ml-auto">
           <button
             onClick={handleOpenDrawer}
-            className="bg-white text-[#C3110C] px-5 py-2 rounded-full text-sm font-semibold hover:bg-slate-100 transition"
+            className="bg-white text-[#C3110C] px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg hover:scale-105 hover:bg-slate-100 transition-all duration-200"
           >
             Edit Profile
           </button>
@@ -139,26 +148,32 @@ function Profile() {
       </div>
 
       {/* Info Section */}
-      <div className="p-8 grid md:grid-cols-2 gap-8">
-
-        <div>
-          <p className="text-xs text-slate-500 uppercase mb-1">Full Name</p>
-          <p className="text-lg font-medium text-slate-800">
+      <div className="p-10 grid md:grid-cols-2 gap-10">
+        
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
+            Full Name
+          </p>
+          <p className="text-xl font-semibold text-slate-800">
             {profile?.fullName || '—'}
           </p>
         </div>
 
-        <div>
-          <p className="text-xs text-slate-500 uppercase mb-1">Email</p>
-          <p className="text-lg font-medium text-slate-800">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
+            Email
+          </p>
+          <p className="text-xl font-semibold text-slate-800">
             {profile?.email || '—'}
           </p>
         </div>
 
         {role === 'manager' && profile?.associatedRestaurants && (
-          <div>
-            <p className="text-xs text-slate-500 uppercase mb-1">Restaurant</p>
-            <p className="text-lg font-medium text-slate-800">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
+            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
+              Restaurant
+            </p>
+            <p className="text-xl font-semibold text-slate-800">
               {profile.associatedRestaurants[0]?.restaurant?.name || '—'}
             </p>
           </div>
@@ -169,46 +184,55 @@ function Profile() {
     {/* Drawer Overlay */}
     {isDrawerOpen && (
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
         onClick={handleCloseDrawer}
       />
     )}
 
     {/* Drawer */}
     <div
-      className={`fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ${
+      className={`fixed top-0 right-0 h-full w-full sm:w-[460px] bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] z-50 transform transition-all duration-300 ${
         isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-slate-800">
+        <h2 className="text-2xl font-semibold text-slate-800">
           Edit Profile
         </h2>
-        <button onClick={handleCloseDrawer} className="text-slate-400 hover:text-slate-700">
+        <button
+          onClick={handleCloseDrawer}
+          className="text-slate-400 hover:text-slate-800 text-lg transition"
+        >
           ✕
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto h-[calc(100%-80px)]">
-
-        {/* Name */}
+      <form
+        onSubmit={handleSubmit}
+        className="p-8 space-y-6 overflow-y-auto h-[calc(100%-90px)]"
+      >
+        {/* Full Name */}
         <div>
-          <label className="text-xs text-slate-500">Full Name</label>
+          <label className="text-xs text-slate-500 uppercase tracking-wide">
+            Full Name
+          </label>
           <input
             name="fullName"
             value={formData.fullName}
             onChange={handleFormChange}
-            className="w-full mt-1 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none transition"
+            className="w-full mt-2 border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] focus:border-[#C3110C] outline-none transition"
           />
         </div>
 
         {/* Email */}
         <div>
-          <label className="text-xs text-slate-500">Email</label>
+          <label className="text-xs text-slate-500 uppercase tracking-wide">
+            Email
+          </label>
           <input
             value={formData.email}
             disabled
-            className="w-full mt-1 bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm"
+            className="w-full mt-2 bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-500"
           />
         </div>
 
@@ -225,7 +249,7 @@ function Profile() {
               placeholder="Current Password"
               value={formData.currentPassword}
               onChange={handleFormChange}
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
+              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
             />
 
             <input
@@ -234,7 +258,7 @@ function Profile() {
               placeholder="New Password"
               value={formData.newPassword}
               onChange={handleFormChange}
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
+              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
             />
 
             <input
@@ -243,7 +267,7 @@ function Profile() {
               placeholder="Confirm New Password"
               value={formData.confirmPassword}
               onChange={handleFormChange}
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
+              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
             />
           </div>
         </div>
@@ -251,7 +275,7 @@ function Profile() {
         {/* Message */}
         {message.text && (
           <div
-            className={`p-4 rounded-xl text-sm ${
+            className={`p-4 rounded-2xl text-sm ${
               message.type === 'success'
                 ? 'bg-green-50 text-green-700'
                 : 'bg-red-50 text-red-700'
@@ -262,11 +286,11 @@ function Profile() {
         )}
 
         {/* Buttons */}
-        <div className="flex gap-4 pt-4">
+        <div className="flex gap-4 pt-6">
           <button
             type="button"
             onClick={handleCloseDrawer}
-            className="flex-1 border border-slate-300 py-3 rounded-xl text-sm font-medium hover:bg-slate-100 transition"
+            className="flex-1 border border-slate-300 py-3 rounded-2xl text-sm font-medium hover:bg-slate-100 transition"
           >
             Cancel
           </button>
@@ -274,7 +298,7 @@ function Profile() {
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 bg-[#C3110C] text-white py-3 rounded-xl text-sm font-semibold hover:bg-red-700 transition disabled:opacity-60"
+            className="flex-1 bg-gradient-to-r from-[#C3110C] to-red-600 text-white py-3 rounded-2xl text-sm font-semibold shadow-lg hover:scale-105 transition-all disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
@@ -282,7 +306,6 @@ function Profile() {
       </form>
     </div>
   </section>
-);
-}
+);}
 
 export default Profile;
