@@ -13,7 +13,7 @@ import {
   Loader2,
   X,
   ImagePlus,
-  Eye,
+  ChevronRight,
 } from "lucide-react";
 
 const RestaurantList = () => {
@@ -260,7 +260,7 @@ const RestaurantList = () => {
                       onClick={() => handleViewRestaurant(r)}
                       className="p-2 border rounded-lg hover:bg-gray-100"
                     >
-                      <Eye className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

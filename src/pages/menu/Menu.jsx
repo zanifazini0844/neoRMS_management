@@ -34,7 +34,7 @@ function Menu() {
     estimatedCookingTime: '',
     status: 'AVAILABLE',
     category: 'MAIN_COURSE',
-    priceCurrency: 'USD',
+    priceCurrency: 'BDT',
     dietaryTags: [],
     images: [],
     imageFile: null,
@@ -60,7 +60,7 @@ function Menu() {
       estimatedCookingTime: '',
       status: 'AVAILABLE',
       category: 'MAIN_COURSE',
-      priceCurrency: 'USD',
+      priceCurrency: 'BDT',
       dietaryTags: [],
       images: [],
       imageFile: null,
@@ -89,7 +89,7 @@ function Menu() {
         estimatedCookingTime: source.estimatedCookingTime || '',
         status: source.status || 'AVAILABLE',
         category: source.category || 'MAIN_COURSE',
-        priceCurrency: source.priceCurrency || 'USD',
+        priceCurrency: source.priceCurrency || 'BDT',
         dietaryTags: source.dietaryTags || [],
         images: source.images || [],
         imageFile: null,
@@ -113,7 +113,7 @@ function Menu() {
         estimatedCookingTime: item.estimatedCookingTime || '',
         status: item.status || 'AVAILABLE',
         category: item.category || 'MAIN_COURSE',
-        priceCurrency: item.priceCurrency || 'USD',
+        priceCurrency: item.priceCurrency || 'BDT',
         dietaryTags: item.dietaryTags || [],
         images: item.images || [],
         imageFile: null,
@@ -607,7 +607,7 @@ function Menu() {
                     <td className="px-4 py-2">
                       {highlightMatch(item.category, searchQuery)}
                     </td>
-                    <td className="px-4 py-2">${baseVariant.price.toFixed(2)}</td>
+                    <td className="px-4 py-2">৳{baseVariant.price.toFixed(2)}</td>
                     <td className="px-4 py-2">
                       {baseVariant.discount > 0 ? `${baseVariant.discount}%` : '-'}
                     </td>
@@ -773,6 +773,7 @@ function Menu() {
                   onChange={handleFieldChange}
                   className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] transition-all cursor-pointer"
                 >
+                  <option value="BDT">BDT (৳)</option>
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
                   <option value="GBP">GBP (£)</option>
@@ -828,7 +829,7 @@ function Menu() {
                     </div>
                     <div>
                       <label className="block text-[10px] font-medium text-slate-600 mb-1">
-                        Price ($)
+                        Price (BDT)
                       </label>
                       <input
                         type="number"
@@ -904,7 +905,7 @@ function Menu() {
                     </div>
                     <div>
                       <label className="block text-[10px] font-medium text-slate-600 mb-1">
-                        Price ($)
+                        Price (BDT)
                       </label>
                       <input
                         type="number"
@@ -972,7 +973,7 @@ function Menu() {
                       className="h-full w-full object-cover"
                     />
                   </div>
-              <p className="text-[10px] text-slate-500 text-center">Image preview</p>
+                  <p className="text-[10px] text-slate-500 text-center">Image preview</p>
                 </div>
               )}
             </div>

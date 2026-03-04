@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Building2 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Popover from '@radix-ui/react-popover';
 import { useInventory } from '../../pages/inventory/InventoryContext';
@@ -67,44 +67,50 @@ function AdminNavbar() {
   };
 
   return (
-    <div className="h-16 border-b bg-white flex items-center px-4 gap-4">
+    <div className="h-20 border-b bg-white flex items-center px-6 gap-6 shadow-sm">
 
-      {/* Left: Restaurant Name */}
-      <div className="flex items-center bg-red-50 px-4 py-2 rounded-xl shadow-md border border-red-200 max-w-max">
-        <h1 className="text-lg md:text-2xl font-semibold text-red-700 tracking-wide">
-          {restaurantName || "Restaurant Name"}
-        </h1>
+      {/* Left: Restaurant Name - Professional Badge */}
+      <div className="flex items-center gap-3 min-w-max">
+        <div className="p-2.5 bg-gradient-to-br from-red-600 to-red-700 rounded-xl shadow-lg">
+          <Building2 className="h-5 w-5 text-white" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Restaurant</span>
+          <h1 className="text-lg font-bold text-slate-900 leading-tight">
+            {restaurantName || "Restaurant Name"}
+          </h1>
+        </div>
       </div>
 
       {/* Center: Search */}
       <div className="flex-1 flex justify-center">
-        <form onSubmit={handleSearchSubmit} className="w-full max-w-md">
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">
+        <form onSubmit={handleSearchSubmit} className="w-full max-w-lg">
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 hover:bg-white transition-colors shadow-sm hover:shadow-md">
             <Search className="h-4 w-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search menu, staff, inventory"
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+              placeholder="Search menu, staff, inventory..."
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 text-slate-700"
             />
           </div>
         </form>
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
 
         {/* 🔔 Notifications Popover */}
         <Popover.Root>
           <Popover.Trigger asChild>
             <button
               type="button"
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-4.5 w-4.5" />
               {totalAlertCount > 0 && (
-                <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C3110C] px-1 text-[9px] font-semibold text-white">
+                <span className="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-red-600 to-red-700 px-1.5 text-[9px] font-bold text-white shadow-lg">
                   {totalAlertCount}
                 </span>
               )}
@@ -114,11 +120,11 @@ function AdminNavbar() {
           <Popover.Content
             side="bottom"
             align="end"
-            sideOffset={8}
-            className="z-50 w-80 max-h-[400px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-lg"
+            sideOffset={12}
+            className="z-50 w-96 max-h-[450px] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-xl"
           >
-            <h3 className="text-xs font-semibold text-slate-900 mb-2">
-              Inventory alerts
+            <h3 className="text-xs font-bold text-slate-900 mb-3 uppercase tracking-widest">
+              Inventory Alerts
             </h3>
 
             {totalAlertCount === 0 ? (
@@ -186,9 +192,9 @@ function AdminNavbar() {
           <DropdownMenu.Trigger asChild>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 hover:bg-slate-100"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 text-sm font-bold text-white">
                 {avatarLetter}
               </span>
             </button>
@@ -196,20 +202,20 @@ function AdminNavbar() {
 
           <DropdownMenu.Content
             align="end"
-            sideOffset={8}
-            className="min-w-[160px] rounded-md border border-slate-200 bg-white p-1 shadow-lg"
+            sideOffset={12}
+            className="min-w-[180px] rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden"
           >
             <DropdownMenu.Item
-              className="flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm text-slate-700 outline-none hover:bg-slate-100"
+              className="flex cursor-pointer items-center rounded-none px-4 py-2.5 text-sm font-medium text-slate-700 outline-none hover:bg-slate-50 transition-colors"
               onSelect={() => navigate('/admin/profile')}
             >
               Profile
             </DropdownMenu.Item>
 
-            <DropdownMenu.Separator className="my-1 h-px bg-slate-200" />
+            <DropdownMenu.Separator className="my-1 h-px bg-slate-100" />
 
             <DropdownMenu.Item
-              className="flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm text-red-600 outline-none hover:bg-red-50"
+              className="flex cursor-pointer items-center rounded-none px-4 py-2.5 text-sm font-medium text-red-600 outline-none hover:bg-red-50 transition-colors"
               onSelect={handleLogout}
             >
               Logout
