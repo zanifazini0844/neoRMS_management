@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ImagePlus, X } from 'lucide-react';
 import api from '../../services/api';
 
 function Profile() {
@@ -15,6 +16,10 @@ function Profile() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  // avatar states for editing
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarData, setAvatarData] = useState(undefined);
+
   const role = typeof window !== 'undefined' ? window.localStorage.getItem('role') : null;
 
   const fetchProfile = async () => {
@@ -23,8 +28,13 @@ function Profile() {
       const res = await api.get('/user/me');
       const data = res.data.data;
       setProfile(data);
+      // initialize avatar preview/data
+      setAvatarPreview(data?.avatar || null);
+      setAvatarData(data?.avatar || '');
     } catch (err) {
       setProfile(null);
+      setAvatarPreview(null);
+      setAvatarData(undefined);
     } finally {
       setLoading(false);
     }
@@ -42,6 +52,9 @@ function Profile() {
     newPassword: '',
     confirmPassword: '',
   });
+  // restore avatar state when opening drawer
+  setAvatarPreview(profile?.avatar || null);
+  setAvatarData(profile?.avatar || '');
   setMessage({ type: '', text: '' });
   setIsDrawerOpen(true);
 };
@@ -53,6 +66,23 @@ function Profile() {
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result);
+      setAvatarData(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAvatar = () => {
+    setAvatarPreview(null);
+    // send empty string to backend to clear
+    setAvatarData('');
   };
 
   const handleSubmit = async (event) => {
@@ -85,6 +115,12 @@ function Profile() {
     if (formData.newPassword) {
       payload.currentPassword = formData.currentPassword;
       payload.newPassword = formData.newPassword;
+    }
+
+    // include avatar when editing profile
+    if (avatarData !== undefined) {
+      // even empty string will clear existing avatar
+      payload.avatar = avatarData;
     }
 
     await api.patch('/user/me', payload);
@@ -129,8 +165,16 @@ function Profile() {
 
       {/* Header Section */}
       <div className="bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8">
-        <div className="h-32 w-32 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-5xl font-bold text-white shadow-lg backdrop-blur-sm">
-          {avatarLetter}
+        <div className="h-32 w-32 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-5xl font-bold text-white shadow-lg backdrop-blur-sm overflow-hidden">
+          {profile?.avatar ? (
+            <img
+              src={profile.avatar}
+              alt="avatar"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            avatarLetter
+          )}
         </div>
 
         <div className="text-white text-center sm:text-left flex-1">
@@ -223,6 +267,43 @@ function Profile() {
         onSubmit={handleSubmit}
         className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6"
       >
+        {/* Avatar upload section */}
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200">
+            🖼️ Profile Picture
+          </h3>
+          <div className="mb-6">
+            <div className="h-24 w-24 rounded-full bg-gray-100 relative overflow-hidden">
+              {avatarPreview ? (
+                <>
+                  <img
+                    src={avatarPreview}
+                    alt="Preview"
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeAvatar}
+                    className="absolute top-0 right-0 bg-white p-1 rounded-full"
+                  >
+                    <X className="h-4 w-4 text-gray-600" />
+                  </button>
+                </>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-gray-400">
+                  <ImagePlus className="h-6 w-6" />
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Account Information Section */}
         <div>
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200">

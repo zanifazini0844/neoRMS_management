@@ -17,6 +17,7 @@ function AdminNavbar() {
 
   const [userName, setUserName] = useState(userNameStored);
   const [restaurantName, setRestaurantName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(null);
 
   const avatarLetter = (userName || 'U').charAt(0).toUpperCase();
 
@@ -26,15 +27,14 @@ function AdminNavbar() {
       try {
         const data = await fetchUserProfile();
         if (data?.fullName) setUserName(data.fullName);
-
-        const rname = data?.associatedRestaurants?.[0]?.restaurant?.name;
-        if (rname) setRestaurantName(rname);
-      } catch {
-        // keep defaults silently
+        if (data?.avatar) setAvatarUrl(data.avatar);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.debug('AdminNavbar.loadProfile error', err);
       }
     };
 
-    loadProfile();
+    loadProfile().catch(() => {});
   }, []);
 
   // Load restaurant separately (optional if needed)
@@ -48,7 +48,7 @@ function AdminNavbar() {
       }
     };
 
-    loadRestaurant();
+    loadRestaurant().catch(() => {});
   }, []);
 
   const handleSearchSubmit = (event) => {
@@ -194,8 +194,16 @@ function AdminNavbar() {
               type="button"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 text-sm font-bold text-white">
-                {avatarLetter}
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 text-sm font-bold text-white overflow-hidden">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="avatar"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  avatarLetter
+                )}
               </span>
             </button>
           </DropdownMenu.Trigger>
