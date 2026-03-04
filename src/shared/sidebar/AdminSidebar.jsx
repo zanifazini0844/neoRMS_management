@@ -13,6 +13,7 @@ import {
   UtensilsCrossed,
   Menu,
   X,
+  LayoutGrid,
 } from 'lucide-react';
 
 function AdminSidebar() {
@@ -39,6 +40,7 @@ function AdminSidebar() {
     { label: 'Dashboard', icon: LayoutDashboard, to: '/admin', end: true },
     { label: 'Orders', icon: ShoppingBag, to: '/admin/orders' },
     { label: 'Menu', icon: Utensils, to: '/admin/menu' },
+    { label: 'Tables', icon: LayoutGrid, to: '/admin/tables' },
     { label: 'Inventory', icon: Boxes, isDropdown: true },
     { label: 'Staff', icon: Users, to: '/admin/staff' },
     { label: 'Analytics', icon: BarChart3, to: '/admin/analytics' },

@@ -9,6 +9,7 @@ import InventoryList from "../pages/inventory/inventorylist";
 import Staff from '../pages/staff/Staff';
 import Analytics from '../pages/analytics/Analytics';
 import Profile from '../pages/profile/Profile';
+import TableManagement from '../pages/table/TableManagement';
 import RestaurantList from "../pages/restaurant/RestaurantList";
 import Unauthorized from '../pages/auth/Unauthorized';
 import { InventoryProvider } from '../pages/inventory/InventoryContext';
@@ -59,6 +60,7 @@ function AppRouter() {
           <Route path="list" element={<InventoryList />} />
           </Route>
           <Route path="staff" element={<Staff />} />
+          <Route path="tables" element={<TableManagement />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="profile" element={<Profile />} />
           <Route path="search" element={<SearchResults />} />

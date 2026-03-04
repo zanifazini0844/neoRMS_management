@@ -1,4 +1,5 @@
 import React from 'react';
+import { Shield } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -19,6 +20,12 @@ export default function AuthCard({ title, description, children }) {
               <br />
               RMS
             </span>
+          </div>
+          <div className="flex items-center gap-3 mt-2">
+            <Shield className="w-6 h-6 text-[#C3110C]" />
+            <p className="text-2xl font-bold tracking-tight text-[#C3110C]">
+              Admin Panel
+            </p>
           </div>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-neutral-500 text-center">
             Restaurant Management System
