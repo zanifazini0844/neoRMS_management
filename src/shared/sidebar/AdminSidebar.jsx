@@ -10,12 +10,16 @@ import {
   UserCircle,
   LogOut,
   ChevronDown,
+  UtensilsCrossed,
+  Menu,
+  X,
 } from 'lucide-react';
 
 function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Auto-open inventory dropdown if inside inventory route
   useEffect(() => {
@@ -40,62 +44,77 @@ function AdminSidebar() {
     { label: 'Analytics', icon: BarChart3, to: '/admin/analytics' },
   ];
 
-  const baseItemClasses =
-    'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200';
+  const navItemClasses = (isActive) =>
+    `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+      isActive
+        ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-lg shadow-red-200'
+        : 'text-slate-600 hover:text-[#FF4D4F] hover:bg-[#FFF5F5]'
+    }`;
+
+  const dropdownItemClasses = (isActive) =>
+    `flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+      isActive
+        ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-md'
+        : 'text-slate-600 hover:text-[#FF4D4F] hover:bg-[#FFECEC]'
+    }`;
 
   return (
-    <div className="flex h-full flex-col justify-between bg-[#FFF5F5] text-[#2C2C2C] shadow-lg w-64">
-    
-      {/* Top section */}
-      <nav className="px-4 py-6 space-y-2">
+    <div className="h-full bg-white text-slate-900 shadow-xl w-64 flex flex-col border-r border-slate-200">
+      {/* Header/Logo Section */}
+      <div className="px-6 py-8 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#FF4D4F] to-[#FF7F7F] flex items-center justify-center text-white shadow-lg">
+            <UtensilsCrossed className="h-6 w-6" />
+          </div>
+          <div className="flex-1">
+            <p className="text-lg font-bold text-slate-900">neoRMS</p>
+            <p className="text-xs text-slate-500 font-medium">Restaurant Management</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2 mb-3">
+          Main Menu
+        </p>
+
         {topItems.map((item) => {
           if (item.isDropdown) {
             return (
               <div key={item.label}>
                 <button
                   onClick={() => setInventoryOpen(!inventoryOpen)}
-                  className={`${baseItemClasses} w-full justify-between ${
+                  className={`${navItemClasses(
                     inventoryOpen || location.pathname.startsWith('/admin/inventory')
-                      ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-md'
-                      : 'text-[#2C2C2C] hover:bg-[#FF4D4F]/10 hover:text-[#FF4D4F]'
-                  }`}
+                  )} w-full justify-between group`}
                 >
                   <div className="flex items-center gap-3">
-                    <Boxes className="h-5 w-5" />
-                    <span className="font-semibold">{item.label}</span>
+                    <Boxes className="h-5 w-5 flex-shrink-0" />
+                    <span>{item.label}</span>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 ml-2 transition-transform duration-300 ${
+                    className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${
                       inventoryOpen ? 'rotate-180' : ''
                     }`}
                   />
                 </button>
 
                 {inventoryOpen && (
-                  <div className="ml-6 mt-2 flex flex-col space-y-2">
+                  <div className="mt-2 ml-2 pl-2 border-l-2 border-slate-200 space-y-1">
                     <NavLink
                       to="/admin/inventory/overview"
-                      className={({ isActive }) =>
-                        `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                          isActive
-                            ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-md'
-                            : 'text-[#FF4D4F]/80 hover:bg-[#FF4D4F]/20'
-                        }`
-                      }
+                      className={({ isActive }) => dropdownItemClasses(isActive)}
                     >
-                      Overview
+                      <div className="h-1.5 w-1.5 rounded-full bg-current flex-shrink-0" />
+                      <span>Overview</span>
                     </NavLink>
                     <NavLink
                       to="/admin/inventory/list"
-                      className={({ isActive }) =>
-                        `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                          isActive
-                            ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-md'
-                            : 'text-[#FF4D4F]/80 hover:bg-[#FF4D4F]/20'
-                        }`
-                      }
+                      className={({ isActive }) => dropdownItemClasses(isActive)}
                     >
-                      Inventory List
+                      <div className="h-1.5 w-1.5 rounded-full bg-current flex-shrink-0" />
+                      <span>Inventory List</span>
                     </NavLink>
                   </div>
                 )}
@@ -109,45 +128,50 @@ function AdminSidebar() {
               key={item.label}
               to={item.to}
               end={item.end}
-              className={({ isActive }) =>
-                `${baseItemClasses} ${
-                  isActive
-                    ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-md'
-                    : 'text-[#FF4D4F]/80 hover:bg-[#FF4D4F]/10 hover:text-[#FF4D4F]'
-                }`
-              }
+              className={({ isActive }) => navItemClasses(isActive)}
             >
-              <Icon className="h-5 w-5" />
-              <span className="font-semibold">{item.label}</span>
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span>{item.label}</span>
             </NavLink>
           );
         })}
       </nav>
 
+      {/* Divider */}
+      <div className="mx-4 border-t border-slate-200" />
+
       {/* Bottom section */}
-      <div className="border-t border-[#FFEDED] px-4 py-6 flex flex-col gap-3">
+      <div className="px-4 py-4 space-y-1">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2 mb-3">
+          Account
+        </p>
+
         <NavLink
           to="/admin/profile"
-          className={({ isActive }) =>
-            `${baseItemClasses} ${
-              isActive
-                ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-md'
-                : 'text-[#FF4D4F]/80 hover:bg-[#FF4D4F]/10 hover:text-[#FF4D4F]'
-            }`
-          }
+          className={({ isActive }) => navItemClasses(isActive)}
         >
-          <UserCircle className="h-5 w-5" />
-          <span className="font-semibold">Profile</span>
+          <UserCircle className="h-5 w-5 flex-shrink-0" />
+          <span>Profile</span>
         </NavLink>
 
         <button
           type="button"
           onClick={handleLogout}
-          className={`${baseItemClasses} justify-start text-[#FF4D4F]/80 hover:bg-[#FF4D4F]/10 hover:text-[#FF4D4F]`}
+          className={navItemClasses(false).replace(
+            'text-slate-600 hover:text-[#FF4D4F] hover:bg-[#FFF5F5]',
+            'text-red-600 hover:text-white hover:bg-red-500'
+          )}
         >
-          <LogOut className="h-5 w-5" />
-          <span className="font-semibold">Logout</span>
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <span>Logout</span>
         </button>
+      </div>
+
+      {/* Footer info */}
+      <div className="px-4 py-4 border-t border-slate-200 bg-slate-50">
+        <p className="text-xs text-slate-500 text-center font-medium">
+          © 2026 neoRMS. All rights reserved.
+        </p>
       </div>
     </div>
   );

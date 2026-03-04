@@ -113,71 +113,81 @@ function Profile() {
   const avatarLetter = (profile?.fullName || 'U').charAt(0).toUpperCase();
 
  return (
-  <section className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 p-8">
+  <section className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6 sm:p-8">
+    {/* Page Header */}
+    <div className="max-w-5xl mx-auto mb-8">
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] bg-clip-text text-transparent">
+        👤 Profile Settings
+      </h1>
+      <p className="text-slate-600 text-sm mt-2">
+        Manage your account details and security preferences
+      </p>
+    </div>
     
     {/* Profile Card */}
-    <div className="max-w-5xl mx-auto backdrop-blur-xl bg-white/80 border border-white/40 shadow-2xl rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)]">
+    <div className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
 
       {/* Header Section */}
-      <div className="relative bg-gradient-to-r from-[#C3110C] via-red-600 to-rose-600 p-10 flex flex-col sm:flex-row items-center gap-8">
-
-        {/* Glow Effect */}
-        <div className="absolute inset-0 bg-white/10 backdrop-blur-md"></div>
-
-        <div className="relative h-28 w-28 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-4xl font-bold text-white shadow-2xl">
+      <div className="bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8">
+        <div className="h-32 w-32 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-5xl font-bold text-white shadow-lg backdrop-blur-sm">
           {avatarLetter}
         </div>
 
-        <div className="relative text-white text-center sm:text-left">
-          <h1 className="text-3xl font-semibold tracking-wide">
+        <div className="text-white text-center sm:text-left flex-1">
+          <h2 className="text-3xl font-bold tracking-tight">
             {profile?.fullName}
-          </h1>
-          <p className="text-sm opacity-90 mt-1">
+          </h2>
+          <p className="text-white/80 text-sm mt-2">
             {profile?.email}
           </p>
+          <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
+            <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white border border-white/30">
+              Role: {role?.charAt(0).toUpperCase() + role?.slice(1)}
+            </span>
+          </div>
         </div>
 
-        <div className="relative sm:ml-auto">
-          <button
-            onClick={handleOpenDrawer}
-            className="bg-white text-[#C3110C] px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg hover:scale-105 hover:bg-slate-100 transition-all duration-200"
-          >
-            Edit Profile
-          </button>
-        </div>
+        <button
+          onClick={handleOpenDrawer}
+          className="px-6 py-3 rounded-xl bg-white text-[#FF4D4F] font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all whitespace-nowrap"
+        >
+          ✏️ Edit Profile
+        </button>
       </div>
 
       {/* Info Section */}
-      <div className="p-10 grid md:grid-cols-2 gap-10">
-        
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
-            Full Name
-          </p>
-          <p className="text-xl font-semibold text-slate-800">
-            {profile?.fullName || '—'}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
-            Email
-          </p>
-          <p className="text-xl font-semibold text-slate-800">
-            {profile?.email || '—'}
-          </p>
-        </div>
-
-        {role === 'manager' && profile?.associatedRestaurants && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
-            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
-              Restaurant
+      <div className="p-8 sm:p-10">
+        <div className="grid sm:grid-cols-2 gap-6">
+          
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 hover:shadow-md hover:border-slate-300 transition-all">
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">
+              📛 Full Name
             </p>
-            <p className="text-xl font-semibold text-slate-800">
-              {profile.associatedRestaurants[0]?.restaurant?.name || '—'}
+            <p className="text-xl font-bold text-slate-900">
+              {profile?.fullName || '—'}
             </p>
           </div>
-        )}
+
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 hover:shadow-md hover:border-slate-300 transition-all">
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">
+              📧 Email
+            </p>
+            <p className="text-xl font-bold text-slate-900">
+              {profile?.email || '—'}
+            </p>
+          </div>
+
+          {role === 'manager' && profile?.associatedRestaurants && (
+            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 hover:shadow-md hover:border-slate-300 transition-all sm:col-span-2">
+              <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">
+                🏪 Associated Restaurant
+              </p>
+              <p className="text-xl font-bold text-slate-900">
+                {profile.associatedRestaurants[0]?.restaurant?.name || '—'}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
 
@@ -189,121 +199,151 @@ function Profile() {
       />
     )}
 
-    {/* Drawer */}
+    {/* Edit Profile Drawer */}
     <div
-      className={`fixed top-0 right-0 h-full w-full sm:w-[460px] bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] z-50 transform transition-all duration-300 ${
+      className={`fixed top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl z-50 transform transition-all duration-300 overflow-hidden flex flex-col ${
         isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
-      <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-slate-800">
-          Edit Profile
+      {/* Drawer Header */}
+      <div className="sticky top-0 bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] p-6 sm:p-7 flex justify-between items-center border-b border-slate-200">
+        <h2 className="text-xl sm:text-2xl font-bold text-white">
+          ✏️ Edit Profile
         </h2>
         <button
           onClick={handleCloseDrawer}
-          className="text-slate-400 hover:text-slate-800 text-lg transition"
+          className="text-white/60 hover:text-white text-2xl transition-colors"
         >
           ✕
         </button>
       </div>
 
+      {/* Drawer Content */}
       <form
         onSubmit={handleSubmit}
-        className="p-8 space-y-6 overflow-y-auto h-[calc(100%-90px)]"
+        className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6"
       >
-        {/* Full Name */}
+        {/* Account Information Section */}
         <div>
-          <label className="text-xs text-slate-500 uppercase tracking-wide">
-            Full Name
-          </label>
-          <input
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleFormChange}
-            className="w-full mt-2 border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] focus:border-[#C3110C] outline-none transition"
-          />
-        </div>
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200">
+            📋 Account Information
+          </h3>
+          
+          <div className="space-y-5">
+            {/* Full Name */}
+            <div>
+              <label className="block text-xs text-slate-600 uppercase tracking-widest font-semibold mb-2">
+                Full Name
+              </label>
+              <input
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleFormChange}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
+              />
+            </div>
 
-        {/* Email */}
-        <div>
-          <label className="text-xs text-slate-500 uppercase tracking-wide">
-            Email
-          </label>
-          <input
-            value={formData.email}
-            disabled
-            className="w-full mt-2 bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-500"
-          />
+            {/* Email */}
+            <div>
+              <label className="block text-xs text-slate-600 uppercase tracking-widest font-semibold mb-2">
+                Email Address
+              </label>
+              <input
+                value={formData.email}
+                disabled
+                className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
+              />
+              <p className="text-xs text-slate-500 mt-2">
+                Email cannot be changed. Contact support for assistance.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Password Section */}
-        <div className="border-t pt-6">
-          <h3 className="text-sm font-semibold text-slate-700 mb-4">
-            Change Password
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200">
+            🔐 Change Password
           </h3>
 
           <div className="space-y-4">
-            <input
-              type="password"
-              name="currentPassword"
-              placeholder="Current Password"
-              value={formData.currentPassword}
-              onChange={handleFormChange}
-              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
-            />
+            <div>
+              <label className="block text-xs text-slate-600 uppercase tracking-widest font-semibold mb-2">
+                Current Password
+              </label>
+              <input
+                type="password"
+                name="currentPassword"
+                placeholder="Enter your current password"
+                value={formData.currentPassword}
+                onChange={handleFormChange}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
+              />
+            </div>
 
-            <input
-              type="password"
-              name="newPassword"
-              placeholder="New Password"
-              value={formData.newPassword}
-              onChange={handleFormChange}
-              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
-            />
+            <div>
+              <label className="block text-xs text-slate-600 uppercase tracking-widest font-semibold mb-2">
+                New Password
+              </label>
+              <input
+                type="password"
+                name="newPassword"
+                placeholder="Enter new password (min. 6 characters)"
+                value={formData.newPassword}
+                onChange={handleFormChange}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
+              />
+            </div>
 
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm New Password"
-              value={formData.confirmPassword}
-              onChange={handleFormChange}
-              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C3110C] outline-none"
-            />
+            <div>
+              <label className="block text-xs text-slate-600 uppercase tracking-widest font-semibold mb-2">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm your new password"
+                value={formData.confirmPassword}
+                onChange={handleFormChange}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Message */}
+        {/* Message Alert */}
         {message.text && (
           <div
-            className={`p-4 rounded-2xl text-sm ${
+            className={`rounded-lg p-4 text-sm font-medium border-l-4 ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-700'
-                : 'bg-red-50 text-red-700'
+                ? 'bg-green-50 text-green-700 border-green-400'
+                : 'bg-red-50 text-red-700 border-red-400'
             }`}
           >
-            {message.text}
+            {message.type === 'success' ? '✓' : '✕'} {message.text}
           </div>
         )}
-
-        {/* Buttons */}
-        <div className="flex gap-4 pt-6">
-          <button
-            type="button"
-            onClick={handleCloseDrawer}
-            className="flex-1 border border-slate-300 py-3 rounded-2xl text-sm font-medium hover:bg-slate-100 transition"
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex-1 bg-gradient-to-r from-[#C3110C] to-red-600 text-white py-3 rounded-2xl text-sm font-semibold shadow-lg hover:scale-105 transition-all disabled:opacity-60"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
       </form>
+
+      {/* Drawer Footer */}
+      <div className="sticky bottom-0 bg-white border-t border-slate-200 p-6 sm:p-8 flex gap-3">
+        <button
+          type="button"
+          onClick={handleCloseDrawer}
+          className="flex-1 px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-all"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          disabled={saving}
+          onClick={handleSubmit}
+          className="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? '⏳ Saving...' : '💾 Save Changes'}
+        </button>
+      </div>
     </div>
   </section>
 );}

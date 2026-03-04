@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import RightPanel from '../../shared/panels/RightPanel';
 import { useSearch } from '../../shared/search/SearchContext';
 import { getStaff, createStaff, updateStaff, deleteStaff, fetchAndStoreUserRestaurant } from '@/services/staffapi';
+import { Users, Coffee, ShoppingBag, Target } from 'lucide-react';
 
 function Staff() {
   // Get role early to use in state initialization
@@ -26,14 +27,30 @@ function Staff() {
   });
 
   const summary = useMemo(() => {
-    return staff.reduce(
+    if (!staff || staff.length === 0) {
+      console.log('[Staff] Summary: Staff array is empty');
+      return { managers: 0, chefs: 0, waiters: 0, total: 0 };
+    }
+    
+    console.log('[Staff] Calculating summary for staff:', staff.map(s => ({ name: s.name, role: s.role })));
+    
+    const result = staff.reduce(
       (acc, member) => {
-        if (member.role === 'Manager') acc.managers += 1;
+        const role = (member.role || '').toLowerCase().trim();
+        console.log(`[Staff] Processing member: ${member.name}, role: ${member.role}, normalized: ${role}`);
+        
+        if (role === 'manager') acc.managers += 1;
+        if (role === 'chef') acc.chefs += 1;
+        if (role === 'waiter') acc.waiters += 1;
         acc.total += 1;
+        
         return acc;
       },
-      { managers: 0, total: 0 }
+      { managers: 0, chefs: 0, waiters: 0, total: 0 }
     );
+    
+    console.log('[Staff] Final summary:', result);
+    return result;
   }, [staff]);
 
   const filteredStaff = useMemo(() => {
@@ -224,177 +241,253 @@ function Staff() {
   };
 
   return (
-    <section className="space-y-6 bg-white p-4 rounded-lg">
+    <section className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-6 md:p-8 space-y-8">
       {/* Error message if restaurant not found */}
       {restaurantNotFound && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-4">
-          <p className="text-sm font-medium text-red-800">
-            ⚠️ No restaurant assigned to this account. Please contact your administrator.
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-center gap-4">
+          <div className="text-2xl">⚠️</div>
+          <p className="text-sm font-semibold text-red-800">
+            No restaurant assigned to this account. Please contact your administrator.
           </p>
         </div>
       )}
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 gap-4 md:max-w-xl">
-        <div className="rounded-xl border border-[#FFEBEB] bg-white p-4">
-          <p className="text-xs font-medium text-[#FF4D4F] uppercase">Total Managers</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900">{summary.managers}</p>
-          {role !== 'owner' && <p className="mt-1 text-[11px] text-slate-400">Visible to owner only.</p>}
-        </div>
-        <div className="rounded-xl border border-[#FFEBEB] bg-white p-4">
-          <p className="text-xs font-medium text-[#FF4D4F] uppercase">Total Staff</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900">{summary.total}</p>
-        </div>
-      </div>
-
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-[#FF4D4F]">Staff members</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] bg-clip-text text-transparent">
+            Staff Management
+          </h1>
+          <p className="text-sm text-slate-600 mt-1">
+            Manage your restaurant team members
+          </p>
+        </div>
         <button
           type="button"
           onClick={handleOpenPanel}
           disabled={restaurantNotFound}
-          className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium text-white ${
+          className={`px-5 py-3 rounded-xl text-white text-sm font-semibold transition-all duration-200 ${
             restaurantNotFound
-              ? 'bg-slate-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-[#FF7F7F] to-[#FFB3B3] hover:opacity-90'
+              ? 'bg-slate-400 cursor-not-allowed opacity-50'
+              : 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] hover:shadow-lg hover:-translate-y-0.5'
           }`}
         >
-          Add staff
+          ➕ Add Staff Member
         </button>
       </div>
 
-      {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        {loading && <div className="p-4 text-sm text-slate-500">Loading staff...</div>}
-        {error && <div className="p-4 text-sm text-red-600">Error: {error}</div>}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-[#FFECEC] text-[#2C2C2C]">
-            <thead className="bg-[#FFEBEB] text-xs uppercase text-[#FF4D4F]">
-              <tr>
-                <th className="px-4 py-2 text-left font-medium">Name</th>
-                <th className="px-4 py-2 text-left font-medium">Email</th>
-                <th className="px-4 py-2 text-left font-medium">Role</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredStaff.map((member) => (
-                <tr key={member.id} className="cursor-pointer hover:[background-color:rgba(255,77,79,0.1)]" onClick={() => handleRowClick(member)}>
-                  <td className="px-4 py-2 text-slate-900 font-medium">{member.name}</td>
-                  <td className="px-4 py-2 text-slate-700">{member.email}</td>
-                  <td className="px-4 py-2 text-slate-700">
-                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#FFEBEB] text-[#FF4D4F]">
-                      {member.role}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="group relative rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-6 overflow-hidden">
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Total Staff</p>
+              <p className="mt-3 text-3xl font-bold text-slate-900 group-hover:text-[#FF4D4F] transition-colors">
+                {summary.total}
+              </p>
+            </div>
+            <Users className="w-8 h-8 text-slate-400" />
+          </div>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-[#FF4D4F] to-[#FF7F7F] transition-opacity"></div>
         </div>
+
+        <div className="group relative rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-6 overflow-hidden">
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Chefs</p>
+              <p className="mt-3 text-3xl font-bold text-slate-900 group-hover:text-[#FF4D4F] transition-colors">{summary.chefs}</p>
+            </div>
+            <Coffee className="w-8 h-8 text-slate-400" />
+          </div>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-[#FF4D4F] to-[#FF7F7F] transition-opacity"></div>
+        </div>
+
+        <div className="group relative rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-6 overflow-hidden">
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Waiters</p>
+              <p className="mt-3 text-3xl font-bold text-slate-900 group-hover:text-[#FF4D4F] transition-colors">{summary.waiters}</p>
+            </div>
+            <ShoppingBag className="w-8 h-8 text-slate-400" />
+          </div>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-[#FF4D4F] to-[#FF7F7F] transition-opacity"></div>
+        </div>
+
+        <div className="group relative rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-6 overflow-hidden">
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Managers</p>
+              <p className="mt-3 text-3xl font-bold text-slate-900 group-hover:text-[#FF4D4F] transition-colors">{summary.managers}</p>
+              {role !== 'owner' && <p className="text-xs text-slate-400 mt-2">Visible to owner only</p>}
+            </div>
+            <Target className="w-8 h-8 text-slate-400" />
+          </div>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-[#FF4D4F] to-[#FF7F7F] transition-opacity"></div>
+        </div>
+      </div>
+
+      {/* Staff Table */}
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF4D4F] mx-auto mb-4"></div>
+              <p className="text-slate-500 font-medium">Loading staff...</p>
+            </div>
+          </div>
+        )}
+        {error && !loading && (
+          <div className="p-6 text-center">
+            <div className="text-3xl mb-3">⚠️</div>
+            <p className="text-red-600 font-medium">{error}</p>
+          </div>
+        )}
+        {!loading && filteredStaff.length === 0 && (
+          <div className="p-12 text-center">
+            <div className="text-4xl mb-3"><Users className="inline-block w-10 h-10 text-slate-400" /></div>
+            <p className="text-slate-600 font-medium">No staff members found</p>
+            <p className="text-sm text-slate-500 mt-1">Add your first team member to get started</p>
+          </div>
+        )}
+        {!loading && filteredStaff.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredStaff.map((member) => (
+                  <tr
+                    key={member.id}
+                    className="hover:bg-slate-50 cursor-pointer transition-colors duration-150 border-b border-slate-100 last:border-0"
+                    onClick={() => handleRowClick(member)}
+                  >
+                    <td className="px-6 py-4 font-semibold text-slate-900">{member.name}</td>
+                    <td className="px-6 py-4 text-slate-600">{member.email}</td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+                        {member.role?.toLowerCase() === 'chef' && <Coffee className="w-4 h-4 mr-1" />}
+                        {member.role?.toLowerCase() === 'waiter' && <ShoppingBag className="w-4 h-4 mr-1" />}
+                        {member.role?.toLowerCase() === 'manager' && <Target className="w-4 h-4 mr-1" />}
+                        {member.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-green-50 text-green-700">
+                        ✓ Active
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Right Panel */}
       <RightPanel isOpen={isPanelOpen} onClose={handleClosePanel}>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Title */}
-          <div className="border-b pb-2 mb-4">
-            <h3 className="text-sm font-semibold text-slate-900">
-              {isViewOnly ? `View Staff Member - ${formValues.name}` : (editingId ? 'Edit Staff Member' : 'Add New Staff Member')}
+          <div className="pb-4 border-b border-slate-200">
+            <h3 className="text-xl font-bold text-slate-900">
+              {isViewOnly ? `👤 View ${formValues.name}` : (editingId ? '✏️ Edit Staff Member' : '➕ Add New Staff Member')}
             </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              {isViewOnly ? 'View member details' : (editingId ? 'Update staff information' : 'Add a new team member')}
+            </p>
           </div>
 
-          {/* Name Field */}
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Name *</label>
-            <input
-              type="text"
-              name="name"
-              value={formValues.name}
-              onChange={handleChange}
-              placeholder="Full name"
-              disabled={isViewOnly}
-              className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                isViewOnly
-                  ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 focus:outline-none focus:border-[#FF4D4F]'
-              }`}
-              required
-            />
-          </div>
+          <div className="space-y-5 max-h-[calc(100vh-300px)] overflow-y-auto pr-3">
+            {/* Name Field */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Name *</label>
+              <input
+                type="text"
+                name="name"
+                value={formValues.name}
+                onChange={handleChange}
+                placeholder="Full name"
+                disabled={isViewOnly}
+                className={`w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all ${
+                  isViewOnly ? 'bg-slate-50 text-slate-600 cursor-not-allowed' : ''
+                }`}
+                required
+              />
+            </div>
 
-          {/* Email Field */}
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Email *</label>
-            <input
-              type="email"
-              name="email"
-              value={formValues.email}
-              onChange={handleChange}
-              placeholder="staff@example.com"
-              disabled={isViewOnly}
-              className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                isViewOnly
-                  ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 focus:outline-none focus:border-[#FF4D4F]'
-              }`}
-              required
-            />
-          </div>
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email *</label>
+              <input
+                type="email"
+                name="email"
+                value={formValues.email}
+                onChange={handleChange}
+                placeholder="staff@example.com"
+                disabled={isViewOnly}
+                className={`w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all ${
+                  isViewOnly ? 'bg-slate-50 text-slate-600 cursor-not-allowed' : ''
+                }`}
+                required
+              />
+            </div>
 
-          {/* Password Field */}
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
-              Password {!editingId && !isViewOnly ? '*' : isViewOnly ? '(not shown)' : '(leave empty to keep current)'}
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formValues.password}
-              onChange={handleChange}
-              placeholder={isViewOnly ? 'Password hidden in view mode' : (editingId ? 'Leave empty to keep current' : 'Min 6 characters')}
-              disabled={isViewOnly}
-              className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                isViewOnly
-                  ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 focus:outline-none focus:border-[#FF4D4F]'
-              }`}
-              required={!editingId && !isViewOnly}
-            />
-          </div>
+            {/* Password Field */}
+            <div className="space-y-2 border-t border-slate-200 pt-4">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Password {!editingId && !isViewOnly ? '*' : `${isViewOnly ? '(not shown)' : '(leave empty to keep current)'}`}
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formValues.password}
+                onChange={handleChange}
+                placeholder={isViewOnly ? 'Password hidden in view mode' : (editingId ? 'Leave empty to keep current' : 'Min 6 characters')}
+                disabled={isViewOnly}
+                className={`w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all ${
+                  isViewOnly ? 'bg-slate-50 text-slate-600 cursor-not-allowed' : ''
+                }`}
+                required={!editingId && !isViewOnly}
+              />
+            </div>
 
-          {/* Role Field */}
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Role *</label>
-            <select
-              name="role"
-              value={formValues.role}
-              onChange={handleChange}
-              disabled={isViewOnly}
-              className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                isViewOnly
-                  ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-200 bg-white focus:outline-none focus:border-[#FF4D4F]'
-              }`}
-              required
-            >
-              <option value="Chef">Chef</option>
-              <option value="Waiter">Waiter</option>
-              {canAssignManager && <option value="Manager">Manager</option>}
-            </select>
-            {!canAssignManager && (
-              <p className="text-xs text-slate-400 mt-1">Only owners can assign manager role</p>
-            )}
+            {/* Role Field */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Role *</label>
+              <select
+                name="role"
+                value={formValues.role}
+                onChange={handleChange}
+                disabled={isViewOnly}
+                className={`w-full rounded-lg border border-slate-300 px-4 py-3 text-sm bg-white focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all ${
+                  isViewOnly ? 'bg-slate-50 text-slate-600 cursor-not-allowed' : ''
+                }`}
+                required
+              >
+                <option value="Chef">Chef</option>
+                <option value="Waiter">Waiter</option>
+                {canAssignManager && <option value="Manager">Manager</option>}
+              </select>
+              {!canAssignManager && (
+                <p className="text-xs text-slate-500">Only owners can assign manager role</p>
+              )}
+            </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-2 pt-4 border-t">
+          <div className="pt-4 flex gap-3 border-t border-slate-200 sticky bottom-0 bg-white">
             {isViewOnly ? (
               <>
                 <button
                   type="button"
                   onClick={handleClosePanel}
-                  className="flex-1 rounded-lg border border-[#FF4D4F] px-3 py-2 text-xs font-medium text-[#2C2C2C] hover:bg-[#FFF5F5] transition"
+                  className="flex-1 px-4 py-3 rounded-lg border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
                 >
                   Close
                 </button>
@@ -411,25 +504,25 @@ function Staff() {
                       }
                     }
                   }}
-                  className="flex-1 rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-200 transition"
+                  className="flex-1 px-4 py-3 rounded-lg bg-red-50 text-red-700 font-semibold text-sm hover:bg-red-100 transition-colors"
                 >
-                  Delete
+                  🗑️ Delete
                 </button>
               </>
             ) : (
               <>
                 <button
-                  type="submit"
-                  className="flex-1 rounded-lg bg-gradient-to-r from-[#FF7F7F] to-[#FFB3B3] px-3 py-2 text-xs font-medium text-white hover:opacity-90 transition"
-                >
-                  {editingId ? 'Update' : 'Create'}
-                </button>
-                <button
                   type="button"
                   onClick={handleClosePanel}
-                  className="flex-1 rounded-lg border border-[#FF4D4F] px-3 py-2 text-xs font-medium text-[#2C2C2C] hover:bg-[#FFF5F5] transition"
+                  className="flex-1 px-4 py-3 rounded-lg border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
                 >
                   Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white font-semibold text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                >
+                  {editingId ? '✓ Update' : '✓ Create'}
                 </button>
               </>
             )}

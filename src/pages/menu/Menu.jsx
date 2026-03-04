@@ -9,6 +9,7 @@ import {
   updateMenuProduct,
   getMenuProductById,
 } from '@/services/menuapi';
+import { Plus, Search, Tag, DollarSign, Check, X, Pencil, Package } from 'lucide-react';
 
 function Menu() {
   const [items, setItems] = useState([]);
@@ -417,51 +418,55 @@ function Menu() {
   );
 
   return (
-    <section className="space-y-6 bg-white p-4 rounded-lg">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
+    <section className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-6 md:p-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-lg font-semibold text-[#FF4D4F]">
-            Menu
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] bg-clip-text text-transparent">
+            Menu Management
           </h1>
-          <p className="text-xs text-slate-500">
-            Manage dishes, availability, and discounts.
+          <p className="text-sm text-slate-600 mt-1 flex items-center gap-1">
+            <Tag className="w-5 h-5 text-slate-400" />
+            Organize dishes, manage availability, and set promotions
           </p>
         </div>
         <button
           type="button"
           onClick={openAddPanel}
-          className="inline-flex items-center rounded-lg bg-gradient-to-r from-[#FF7F7F] to-[#FFB3B3] px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+          className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] px-5 py-3 text-sm font-semibold text-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
         >
-          Add New Menu
+          <Plus className="w-4 h-4 mr-2" /> Add New Dish
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold text-[#FF4D4F]">
-            Filters
-          </h2>
+      {/* Filters Section */}
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-1">
+              <Search className="w-5 h-5" /> Filters
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">Refine your menu items</p>
+          </div>
           <button
             type="button"
             onClick={resetFilters}
-            className="rounded-lg bg-gradient-to-r from-[#FF7F7F] to-[#FFB3B3] px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+            className="rounded-lg bg-slate-100 hover:bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors"
           >
-            Reset filters
+            Reset All
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-600">
-              Category
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
+              <Tag className="w-4 h-4" /> Category
             </label>
             <select
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
-              className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
+              className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
             >
-              <option value="all">All</option>
+              <option value="all">All Categories</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -470,39 +475,39 @@ function Menu() {
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-600">
-              Availability
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
+              <Check className="w-4 h-4" /> Availability
             </label>
             <select
               value={availabilityFilter}
               onChange={(event) => setAvailabilityFilter(event.target.value)}
-              className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
+              className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
             >
-              <option value="all">All</option>
-              <option value="available">Available</option>
-              <option value="unavailable">Unavailable</option>
+              <option value="all">All Items</option>
+              <option value="available"><Check className="w-4 h-4 inline mr-1" /> Available</option>
+              <option value="unavailable"><X className="w-4 h-4 inline mr-1" /> Unavailable</option>
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-600">
-              Discount
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
+              <Tag className="w-4 h-4" /> Discount
             </label>
             <select
               value={discountFilter}
               onChange={(event) => setDiscountFilter(event.target.value)}
-              className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
+              className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
             >
-              <option value="all">All</option>
-              <option value="with">With discount</option>
-              <option value="without">Without discount</option>
+              <option value="all">All Discounts</option>
+              <option value="with">With Discount</option>
+              <option value="without">No Discount</option>
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-600">
-              Price range
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
+              <DollarSign className="w-4 h-4" /> Price Range (৳)
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -511,132 +516,136 @@ function Menu() {
                 value={minPrice}
                 onChange={(event) => setMinPrice(event.target.value)}
                 placeholder="Min"
-                className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10"
               />
-              <span className="text-xs text-slate-400">to</span>
+              <span className="text-slate-400">–</span>
               <input
                 type="number"
                 min="0"
                 value={maxPrice}
                 onChange={(event) => setMaxPrice(event.target.value)}
                 placeholder="Max"
-                className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:border-[#C3110C]"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Table view of menu items */}
+      {/* Menu Items Table */}
       {isLoading && (
-        <div className="flex justify-center py-8">
-          <p className="text-sm text-slate-500">Loading menu items...</p>
+        <div className="flex justify-center items-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF4D4F] mx-auto mb-4"></div>
+            <p className="text-slate-500 font-medium">Loading menu items...</p>
+          </div>
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          ⚠️ {error}
         </div>
       )}
 
       {!isLoading && !error && filteredItems.length === 0 && (
-        <div className="text-center text-sm text-slate-500">
-          No menu items found.
+        <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
+          <div className="text-4xl mb-3"><Package className="inline-block w-10 h-10 text-slate-400" /></div>
+          <p className="text-slate-600 font-medium">No menu items found</p>
+          <p className="text-sm text-slate-500 mt-1">Try adjusting your filters or add a new dish</p>
         </div>
       )}
 
       {!isLoading && !error && filteredItems.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-[#FFECEC] text-[#2C2C2C]">
-            <thead className="bg-[#FFEBEB]">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Image
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Title
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Category
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Price
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Discount
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Status
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Est. Time
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase">
-                  Tags
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
-              {filteredItems.map((item) => {
-                const baseVariant = item.variants && item.variants.length > 0 ? item.variants[0] : { price: 0, discount: 0 };
-                const imageUrl = item.images && item.images.length > 0 ? item.images[0] : item.imageUrl;
-                const isAvailable = item.status === 'AVAILABLE';
-                return (
-                  <tr
-                    key={item.id}
-                    className="cursor-pointer hover:[background-color:rgba(255,77,79,0.1)]"
-                    onClick={() => openEditPanel(item)}
-                  >
-                    <td className="px-4 py-2">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={item.productTitle}
-                          className="h-10 w-10 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 flex items-center justify-center bg-slate-100 text-xs text-slate-400 rounded">
-                          N/A
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      {highlightMatch(item.productTitle, searchQuery)}
-                    </td>
-                    <td className="px-4 py-2">
-                      {highlightMatch(item.category, searchQuery)}
-                    </td>
-                    <td className="px-4 py-2">৳{baseVariant.price.toFixed(2)}</td>
-                    <td className="px-4 py-2">
-                      {baseVariant.discount > 0 ? `${baseVariant.discount}%` : '-'}
-                    </td>
-                    <td className="px-4 py-2">{isAvailable ? 'Available' : 'Unavailable'}</td>
-                    <td className="px-4 py-2">
-                      {item.estimatedCookingTime || '-'}
-                    </td>
-                    <td className="px-4 py-2">
-                      {(item.dietaryTags || []).join(', ')}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Image</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Dish Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Price</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Discount</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Cook Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredItems.map((item) => {
+                  const baseVariant = item.variants && item.variants.length > 0 ? item.variants[0] : { price: 0, discount: 0 };
+                  const imageUrl = item.images && item.images.length > 0 ? item.images[0] : item.imageUrl;
+                  const isAvailable = item.status === 'AVAILABLE';
+                  return (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-slate-50 cursor-pointer transition-colors duration-150 border-b border-slate-100 last:border-0"
+                      onClick={() => openEditPanel(item)}
+                    >
+                      <td className="px-6 py-4">
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={item.productTitle}
+                            className="h-12 w-12 object-cover rounded-lg shadow-sm"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 flex items-center justify-center bg-slate-100 text-xs text-slate-400 rounded-lg">
+                            —
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-slate-900">
+                        {highlightMatch(item.productTitle, searchQuery)}
+                      </td>
+                      <td className="px-6 py-4 text-slate-600">
+                        <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                          {highlightMatch(item.category, searchQuery)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right font-bold text-[#FF4D4F]">
+                        ৳{baseVariant.price.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {baseVariant.discount > 0 ? (
+                          <span className="bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-bold">
+                            -{baseVariant.discount}%
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          isAvailable 
+                            ? 'bg-green-50 text-green-700' 
+                            : 'bg-amber-50 text-amber-700'
+                        }`}>
+                          {isAvailable ? <><Check className="w-4 h-4 inline mr-1" />Available</> : <><X className="w-4 h-4 inline mr-1" />Out of Stock</>}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center text-slate-600">
+                        {item.estimatedCookingTime ? `${item.estimatedCookingTime}m` : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* RightPanel for add/update/delete */}
       <RightPanel isOpen={isPanelOpen} onClose={closePanel}>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="flex items-center justify-between">
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900">
-                {editingId ? 'Edit menu item' : 'Add menu item'}
+              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                {editingId ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />} {editingId ? 'Edit Dish' : 'Add New Dish'}
               </h3>
               <p className="mt-1 text-xs text-slate-500">
-                Use this form to manage dishes, pricing, and
-                availability.
+                {editingId ? 'Update dish details and pricing' : 'Create a new menu item'}
               </p>
             </div>
             {editingId != null && (
@@ -644,21 +653,18 @@ function Menu() {
                 type="button"
                 onClick={handleDelete}
                 disabled={isSubmitting}
-                className="rounded-md border border-red-200 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 px-4 py-2 text-xs font-bold text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Deleting...' : 'Delete'}
+                🗑️ Delete
               </button>
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5 max-h-[calc(100vh-300px)] overflow-y-auto pr-3">
             {/* Product Title */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor="productTitle"
-                className="block text-xs font-semibold text-slate-700"
-              >
-                Product Title <span className="text-red-500">*</span>
+            <div className="space-y-2">
+              <label htmlFor="productTitle" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Dish Name <span className="text-red-500">*</span>
               </label>
               <input
                 id="productTitle"
@@ -667,18 +673,14 @@ function Menu() {
                 required
                 value={formValues.productTitle}
                 onChange={handleFieldChange}
-                placeholder="Enter product name (e.g. Grilled Chicken Burger)"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] transition-all"
+                placeholder="e.g., Grilled Chicken Burger"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
               />
-              <p className="text-[10px] text-slate-500">Give your product a clear, descriptive name</p>
             </div>
 
             {/* Product Description */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor="productDescription"
-                className="block text-xs font-semibold text-slate-700"
-              >
+            <div className="space-y-2">
+              <label htmlFor="productDescription" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Description
               </label>
               <textarea
@@ -687,19 +689,15 @@ function Menu() {
                 value={formValues.productDescription}
                 onChange={handleFieldChange}
                 rows="3"
-                placeholder="Describe your product... (e.g. Juicy grilled chicken patty with fresh lettuce and tomato)"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] resize-none transition-all"
+                placeholder="Describe your dish... (ingredients, flavor profile, etc.)"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 resize-none transition-all"
               />
-              <p className="text-[10px] text-slate-500">Help customers understand what they're ordering</p>
             </div>
 
             {/* Category & Status */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="category"
-                  className="block text-xs font-semibold text-slate-700"
-                >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="category" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Category
                 </label>
                 <input
@@ -708,62 +706,48 @@ function Menu() {
                   type="text"
                   value={formValues.category}
                   onChange={handleFieldChange}
-                  placeholder="e.g. MAIN_COURSE"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] transition-all"
+                  placeholder="MAIN_COURSE"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
                 />
-                <p className="text-[10px] text-slate-500">MAIN_COURSE, DESSERT, etc.</p>
               </div>
 
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="status"
-                  className="block text-xs font-semibold text-slate-700"
-                >
-                  Availability
+              <div className="space-y-2">
+                <label htmlFor="status" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Status
                 </label>
                 <select
                   id="status"
                   name="status"
                   value={formValues.status}
                   onChange={handleFieldChange}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] transition-all cursor-pointer"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm bg-white focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all cursor-pointer"
                 >
-                  <option value="AVAILABLE">Available</option>
-                  <option value="OUT_OF_STOCK">Out of Stock</option>
+                  <option value="AVAILABLE"><Check className="w-4 h-4 inline mr-1" /> Available</option>
+                  <option value="OUT_OF_STOCK"><X className="w-4 h-4 inline mr-1" /> Out of Stock</option>
                 </select>
               </div>
             </div>
 
             {/* Cooking Time & Currency */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="estimatedCookingTime"
-                  className="block text-xs font-semibold text-slate-700"
-                >
-                  Est. Cooking Time
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="estimatedCookingTime" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Cook Time (min)
                 </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="estimatedCookingTime"
-                    name="estimatedCookingTime"
-                    type="number"
-                    min="0"
-                    max="120"
-                    value={formValues.estimatedCookingTime}
-                    onChange={handleFieldChange}
-                    placeholder="15"
-                    className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] transition-all"
-                  />
-                  <span className="text-xs text-slate-600 font-medium">min</span>
-                </div>
+                <input
+                  id="estimatedCookingTime"
+                  name="estimatedCookingTime"
+                  type="number"
+                  min="0"
+                  value={formValues.estimatedCookingTime}
+                  onChange={handleFieldChange}
+                  placeholder="15"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
+                />
               </div>
 
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="priceCurrency"
-                  className="block text-xs font-semibold text-slate-700"
-                >
+              <div className="space-y-2">
+                <label htmlFor="priceCurrency" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Currency
                 </label>
                 <select
@@ -771,23 +755,16 @@ function Menu() {
                   name="priceCurrency"
                   value={formValues.priceCurrency}
                   onChange={handleFieldChange}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] transition-all cursor-pointer"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm bg-white focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all cursor-pointer"
                 >
                   <option value="BDT">BDT (৳)</option>
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                  <option value="GBP">GBP (£)</option>
-                  <option value="PKR">PKR (₨)</option>
                 </select>
               </div>
             </div>
 
             {/* Dietary Tags */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor="dietaryTags"
-                className="block text-xs font-semibold text-slate-700"
-              >
+            <div className="space-y-2">
+              <label htmlFor="dietaryTags" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Dietary Tags
               </label>
               <input
@@ -796,73 +773,57 @@ function Menu() {
                 type="text"
                 value={Array.isArray(formValues.dietaryTags) ? formValues.dietaryTags.join(', ') : formValues.dietaryTags}
                 onChange={handleFieldChange}
-                placeholder="e.g. HALAL, GLUTEN_FREE, VEGAN"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C] transition-all"
+                placeholder="HALAL, GLUTEN_FREE, VEGAN (comma-separated)"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-2 focus:ring-[#FF4D4F]/10 transition-all"
               />
-              <p className="text-[10px] text-slate-500">Separate multiple tags with commas</p>
             </div>
 
             {/* Variants */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-700">
+            <div className="space-y-3 border-t border-slate-200 pt-4">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Size Variants
               </label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {formValues.variants.map((variant, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-[1fr,1fr,1fr,auto] items-end gap-2 p-3 bg-slate-50 rounded-md border border-slate-200"
-                  >
+                  <div key={index} className="grid grid-cols-[2fr,2fr,1.5fr,auto] items-end gap-2 p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
                     <div>
-                      <label className="block text-[10px] font-medium text-slate-600 mb-1">
-                        Size
-                      </label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-2 uppercase">Size</label>
                       <input
                         type="text"
                         value={variant.type}
-                        onChange={(event) =>
-                          handleVariantChange(index, 'type', event.target.value)
-                        }
-                        placeholder="e.g. SMALL, MEDIUM, LARGE"
-                        className="w-full rounded-md border border-slate-300 px-2 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C]"
+                        onChange={(event) => handleVariantChange(index, 'type', event.target.value)}
+                        placeholder="Small, Medium..."
+                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-1 focus:ring-[#FF4D4F]/20"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-medium text-slate-600 mb-1">
-                        Price (BDT)
-                      </label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-2 uppercase">Price (৳)</label>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
                         value={variant.price || ''}
-                        onChange={(event) =>
-                          handleVariantChange(index, 'price', event.target.value)
-                        }
+                        onChange={(event) => handleVariantChange(index, 'price', event.target.value)}
                         placeholder="0.00"
-                        className="w-full rounded-md border border-slate-300 px-2 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C]"
+                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-1 focus:ring-[#FF4D4F]/20"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-medium text-slate-600 mb-1">
-                        Discount (%)
-                      </label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-2 uppercase">Discount %</label>
                       <input
                         type="number"
                         min="0"
                         max="100"
                         value={variant.discount || 0}
-                        onChange={(event) =>
-                          handleVariantChange(index, 'discount', event.target.value)
-                        }
+                        onChange={(event) => handleVariantChange(index, 'discount', event.target.value)}
                         placeholder="0"
-                        className="w-full rounded-md border border-slate-300 px-2 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C]"
+                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-1 focus:ring-[#FF4D4F]/20"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={() => removeVariantField(index)}
-                      className="px-3 py-2 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-[11px] font-medium transition-colors"
+                      className="px-2 py-2 rounded-md border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-colors"
                     >
                       ✕
                     </button>
@@ -871,58 +832,47 @@ function Menu() {
                 <button
                   type="button"
                   onClick={addVariantField}
-                  className="w-full px-3 py-2 rounded-md border-2 border-dashed border-slate-300 text-slate-600 hover:border-slate-400 hover:bg-slate-50 text-sm font-medium transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-dashed border-slate-300 text-slate-600 hover:border-[#FF4D4F] hover:bg-red-50 text-sm font-bold transition-colors"
                 >
-                  + Add Variant
+                  + Add Size
                 </button>
               </div>
             </div>
 
             {/* Addons */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-700">
+            <div className="space-y-3 border-t border-slate-200 pt-4">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Add-ons (Optional)
               </label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {formValues.addons.map((addon, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-[1.5fr,1fr,auto] items-end gap-2 p-3 bg-slate-50 rounded-md border border-slate-200"
-                  >
+                  <div key={index} className="grid grid-cols-[2fr,1.5fr,auto] items-end gap-2 p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
                     <div>
-                      <label className="block text-[10px] font-medium text-slate-600 mb-1">
-                        Add-on Name
-                      </label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-2 uppercase">Name</label>
                       <input
                         type="text"
                         value={addon.name}
-                        onChange={(event) =>
-                          handleAddonChange(index, 'name', event.target.value)
-                        }
-                        placeholder="e.g. Extra Cheese, Bacon Strip"
-                        className="w-full rounded-md border border-slate-300 px-2 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C]"
+                        onChange={(event) => handleAddonChange(index, 'name', event.target.value)}
+                        placeholder="Extra Cheese, Bacon..."
+                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-1 focus:ring-[#FF4D4F]/20"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-medium text-slate-600 mb-1">
-                        Price (BDT)
-                      </label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-2 uppercase">Price (৳)</label>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
                         value={addon.price || ''}
-                        onChange={(event) =>
-                          handleAddonChange(index, 'price', event.target.value)
-                        }
+                        onChange={(event) => handleAddonChange(index, 'price', event.target.value)}
                         placeholder="0.00"
-                        className="w-full rounded-md border border-slate-300 px-2 py-2 text-sm outline-none focus:border-[#C3110C] focus:ring-1 focus:ring-[#C3110C]"
+                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:border-[#FF4D4F] focus:ring-1 focus:ring-[#FF4D4F]/20"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={() => removeAddonField(index)}
-                      className="px-3 py-2 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-[11px] font-medium transition-colors"
+                      className="px-2 py-2 rounded-md border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-colors"
                     >
                       ✕
                     </button>
@@ -931,7 +881,7 @@ function Menu() {
                 <button
                   type="button"
                   onClick={addAddonField}
-                  className="w-full px-3 py-2 rounded-md border-2 border-dashed border-slate-300 text-slate-600 hover:border-slate-400 hover:bg-slate-50 text-sm font-medium transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-dashed border-slate-300 text-slate-600 hover:border-[#FF4D4F] hover:bg-red-50 text-sm font-bold transition-colors"
                 >
                   + Add Add-on
                 </button>
@@ -939,12 +889,9 @@ function Menu() {
             </div>
 
             {/* Image upload */}
-            <div className="space-y-1.5">
-              <label
-                htmlFor="image"
-                className="block text-xs font-semibold text-slate-700"
-              >
-                Product Image
+            <div className="space-y-3 border-t border-slate-200 pt-4">
+              <label htmlFor="image" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Dish Image
               </label>
               <div className="relative">
                 <input
@@ -957,16 +904,16 @@ function Menu() {
                 />
                 <label
                   htmlFor="image"
-                  className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-slate-300 rounded-md cursor-pointer hover:border-slate-400 hover:bg-slate-50 transition-colors"
+                  className="flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-[#FF4D4F] hover:bg-red-50 transition-all"
                 >
-                  <span className="text-sm font-medium text-slate-600">
-                    📷 Click to upload image
-                  </span>
+                  <span className="text-3xl mb-2">📷</span>
+                  <span className="text-sm font-bold text-slate-600">Click to upload image</span>
+                  <span className="text-xs text-slate-500 mt-1">or drag and drop</span>
                 </label>
               </div>
               {formValues.imageUrl && (
-                <div className="mt-2 space-y-2">
-                  <div className="h-32 w-full overflow-hidden rounded-md border border-slate-200 bg-slate-50">
+                <div className="mt-4 space-y-2">
+                  <div className="h-40 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
                     <img
                       src={formValues.imageUrl}
                       alt="Preview"
@@ -979,21 +926,21 @@ function Menu() {
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-2 border-t border-slate-200">
+          <div className="pt-4 flex gap-3 border-t border-slate-200 sticky bottom-0 bg-white">
             <button
               type="button"
               onClick={closePanel}
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-lg border border-[#FF4D4F] text-[#2C2C2C] font-medium text-sm hover:bg-[#FFF5F5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-3 rounded-lg border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FF7F7F] to-[#FFB3B3] text-white font-medium text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md"
+              className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white font-semibold text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Product' : 'Create Product')}
+              {isSubmitting ? (editingId ? '⏳ Updating...' : '⏳ Creating...') : (editingId ? <><Check className="w-4 h-4 inline mr-1" />Update Dish</> : <><Check className="w-4 h-4 inline mr-1" />Create Dish</>)}
             </button>
           </div>
         </form>
