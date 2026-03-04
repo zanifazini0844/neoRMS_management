@@ -153,7 +153,7 @@ function Profile() {
     {/* Page Header */}
     <div className="max-w-5xl mx-auto mb-8">
       <h1 className="text-4xl font-bold bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] bg-clip-text text-transparent">
-        👤 Profile Settings
+        Profile Settings
       </h1>
       <p className="text-slate-600 text-sm mt-2">
         Manage your account details and security preferences
@@ -195,7 +195,7 @@ function Profile() {
           onClick={handleOpenDrawer}
           className="px-6 py-3 rounded-xl bg-white text-[#FF4D4F] font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all whitespace-nowrap"
         >
-          ✏️ Edit Profile
+          Edit Profile
         </button>
       </div>
 
@@ -205,7 +205,7 @@ function Profile() {
           
           <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 hover:shadow-md hover:border-slate-300 transition-all">
             <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">
-              📛 Full Name
+              Full Name
             </p>
             <p className="text-xl font-bold text-slate-900">
               {profile?.fullName || '—'}
@@ -214,7 +214,7 @@ function Profile() {
 
           <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 hover:shadow-md hover:border-slate-300 transition-all">
             <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">
-              📧 Email
+              Email
             </p>
             <p className="text-xl font-bold text-slate-900">
               {profile?.email || '—'}
@@ -224,7 +224,7 @@ function Profile() {
           {role === 'manager' && profile?.associatedRestaurants && (
             <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 hover:shadow-md hover:border-slate-300 transition-all sm:col-span-2">
               <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-3">
-                🏪 Associated Restaurant
+                Associated Restaurant
               </p>
               <p className="text-xl font-bold text-slate-900">
                 {profile.associatedRestaurants[0]?.restaurant?.name || '—'}
@@ -252,7 +252,7 @@ function Profile() {
       {/* Drawer Header */}
       <div className="sticky top-0 bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] p-6 sm:p-7 flex justify-between items-center border-b border-slate-200">
         <h2 className="text-xl sm:text-2xl font-bold text-white">
-          ✏️ Edit Profile
+          Edit Profile
         </h2>
         <button
           onClick={handleCloseDrawer}
@@ -270,7 +270,7 @@ function Profile() {
         {/* Avatar upload section */}
         <div>
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200">
-            🖼️ Profile Picture
+            Profile Picture
           </h3>
           <div className="mb-6">
             <div className="h-24 w-24 rounded-full bg-gray-100 relative overflow-hidden">
@@ -307,7 +307,7 @@ function Profile() {
         {/* Account Information Section */}
         <div>
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200">
-            📋 Account Information
+            Account Information
           </h3>
           
           <div className="space-y-5">
@@ -344,7 +344,7 @@ function Profile() {
         {/* Password Section */}
         <div>
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200">
-            🔐 Change Password
+            Change Password
           </h3>
 
           <div className="space-y-4">
@@ -401,7 +401,7 @@ function Profile() {
                 : 'bg-red-50 text-red-700 border-red-400'
             }`}
           >
-            {message.type === 'success' ? '✓' : '✕'} {message.text}
+            {message.text}
           </div>
         )}
       </form>
@@ -422,7 +422,7 @@ function Profile() {
           onClick={handleSubmit}
           className="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? '⏳ Saving...' : '💾 Save Changes'}
+          {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>

@@ -56,7 +56,8 @@ function AdminNavbar() {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
     setSearchQuery(trimmed);
-    navigate('/admin/search');
+    // include query param so results page can reload and retain state
+    navigate(`/admin/search?query=${encodeURIComponent(trimmed)}`);
   };
 
   const handleLogout = () => {
@@ -146,7 +147,7 @@ function AdminNavbar() {
                         className="flex items-center justify-between rounded-md bg-rose-50 px-2 py-1 text-rose-800"
                       >
                         <span className="truncate">{item.name}</span>
-                        <span className="ml-2 text-[11px]">0 left</span>
+                        <span className="ml-2 text-[11px]">stock out product</span>
                       </li>
                     ))}
                     {getOutOfStockItems().length === 0 && (

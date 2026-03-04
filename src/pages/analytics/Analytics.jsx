@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import {
   LineChart,
   Line,
@@ -6,17 +7,13 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
 } from 'recharts';
 
-const MONTHLY_REVENUE = [
+// fetch utilities
+import { getRestaurantOrders } from '@/services/orderapi';
+
+// placeholder for static data if API isn't available yet
+const DEFAULT_MONTHLY_REVENUE = [
   { month: 'Jan', revenue: 32000 },
   { month: 'Feb', revenue: 28000 },
   { month: 'Mar', revenue: 35000 },
@@ -31,50 +28,75 @@ const MONTHLY_REVENUE = [
   { month: 'Dec', revenue: 58000 },
 ];
 
-const SUMMARY = {
-  totalRevenue: 529000,
-  profit: 187000,
-  maintenance: 62000,
-};
-
-const REVENUE_DISTRIBUTION = [
-  { name: 'Revenue', value: SUMMARY.totalRevenue },
-  { name: 'Cost', value: SUMMARY.totalRevenue - SUMMARY.profit },
-  { name: 'Profit', value: SUMMARY.profit },
-];
-
-const TOP_PRODUCTS = [
-  { name: 'Margherita Pizza', sales: 1520 },
-  { name: 'Cheeseburger', sales: 1175 },
-  { name: 'Pasta Alfredo', sales: 980 },
-  { name: 'Caesar Salad', sales: 870 },
-  { name: 'Tiramisu', sales: 640 },
-];
-
-const BEST_DAYS = [
-  { day: 'Mon', revenue: 3200 },
-  { day: 'Tue', revenue: 4100 },
-  { day: 'Wed', revenue: 3800 },
-  { day: 'Thu', revenue: 4500 },
-  { day: 'Fri', revenue: 6200 },
-  { day: 'Sat', revenue: 7800 },
-  { day: 'Sun', revenue: 5400 },
-];
-
-const BRANCH_REVENUE = [
-  { branch: 'Downtown', revenue: 220000 },
-  { branch: 'Uptown', revenue: 185000 },
-  { branch: 'Seaside', revenue: 165000 },
-  { branch: 'Airport', revenue: 142000 },
-];
-
-const PIE_COLORS = ['#C3110C', '#E6501B', '#10b981'];
 
 function Analytics() {
-  const role =
-    typeof window !== 'undefined'
-      ? window.localStorage.getItem('role')
-      : null;
+
+  const [orders, setOrders] = useState([]);
+
+  // utility to safely grab a numeric total from the order object
+  const extractOrderTotal = (order) => {
+    return (
+      Number(order.totalPrice) ||
+      Number(order.totalAmount) ||
+      Number(order.total) ||
+      Number(order.grandTotal) ||
+      Number(order.amount) ||
+      0
+    );
+  };
+
+  // fetch orders on load
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const o = await getRestaurantOrders();
+        if (mounted) setOrders(o || []);
+      } catch (err) {
+        console.error('Analytics fetch orders error:', err);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // derive revenue statistics from orders
+  const stats = useMemo(() => {
+    const delivered = orders.filter(
+      (o) => (o.status || '').toLowerCase() === 'delivered'
+    );
+    const totalRevenue = delivered.reduce(
+      (acc, o) => acc + extractOrderTotal(o),
+      0
+    );
+    return {
+      totalRevenue,
+    };
+  }, [orders]);
+
+  // build monthly revenue array suitable for the line chart
+  const monthlyRevenue = useMemo(() => {
+    if (orders.length === 0) return DEFAULT_MONTHLY_REVENUE;
+
+    const map = new Map();
+    orders.forEach((o) => {
+      if ((o.status || '').toLowerCase() !== 'delivered') return;
+      const d = o.createdAt ? new Date(o.createdAt) : new Date();
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      map.set(key, (map.get(key) || 0) + extractOrderTotal(o));
+    });
+    const entries = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+    const result = entries.map(([key, val]) => {
+      const [year, monthIndex] = key.split('-');
+      const date = new Date(year, monthIndex);
+      const monthStr = date.toLocaleString('en-US', { month: 'short' });
+      return { month: monthStr, revenue: val };
+    });
+    // if there are more than 12 months, take the last 12
+    return result.slice(-12);
+  }, [orders]);
 
   const formatterCurrency = (value) => {
     const formatted = new Intl.NumberFormat('en-US', {
@@ -95,44 +117,18 @@ function Analytics() {
         </p>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* Summary card for revenue only */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="group relative rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-7 overflow-hidden">
           <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-emerald-500 to-emerald-600 transition-opacity"></div>
           <div className="relative">
             <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Total Revenue</p>
             <p className="mt-3 text-3xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-              {formatterCurrency(SUMMARY.totalRevenue)}
+              {formatterCurrency(stats.totalRevenue || 0)}
             </p>
-            <p className="mt-2 text-xs text-emerald-600 font-semibold">↗ +12.4% vs last period</p>
           </div>
         </div>
 
-        <div className="group relative rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-7 overflow-hidden">
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-blue-500 to-blue-600 transition-opacity"></div>
-          <div className="relative">
-            <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Profit</p>
-            <p className="mt-3 text-3xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-              {formatterCurrency(SUMMARY.profit)}
-            </p>
-            <p className="mt-2 text-xs text-blue-600 font-semibold">Margin {(SUMMARY.profit / SUMMARY.totalRevenue * 100).toFixed(1)}%</p>
-          </div>
-        </div>
-
-        <div className="group relative rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-7 overflow-hidden sm:col-span-2 lg:col-span-1">
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-orange-500 to-orange-600 transition-opacity"></div>
-          <div className="relative">
-            <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Maintenance Cost</p>
-            <p className="mt-3 text-3xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
-              {formatterCurrency(SUMMARY.maintenance)}
-            </p>
-            <p className="mt-2 text-xs text-slate-500 font-semibold">Facilities & Equipment</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue line chart */}
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
@@ -145,7 +141,7 @@ function Analytics() {
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={MONTHLY_REVENUE}>
+              <LineChart data={monthlyRevenue}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
                 <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
                 <YAxis tickFormatter={(v) => `${v / 1000}k`} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
@@ -155,111 +151,8 @@ function Analytics() {
             </ResponsiveContainer>
           </div>
         </div>
-
-        {/* Revenue distribution pie chart */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-            <h2 className="text-lg font-bold text-slate-900">
-              🎯 Revenue Distribution
-            </h2>
-            <span className="text-xs text-slate-500 font-medium">
-              Revenue vs Cost vs Profit
-            </span>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={REVENUE_DISTRIBUTION}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  label={(entry) => `${entry.name} ${((entry.value / REVENUE_DISTRIBUTION.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(0)}%`}
-                >
-                  {REVENUE_DISTRIBUTION.map((entry, index) => (
-                    <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatterCurrency(value)} />
-                <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Top selling products bar chart */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-            <h2 className="text-lg font-bold text-slate-900">
-              ⭐ Top Selling Products
-            </h2>
-            <span className="text-xs text-slate-500 font-medium">
-              Based on order count
-            </span>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={TOP_PRODUCTS}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} />
-                <Tooltip />
-                <Bar dataKey="sales" fill="#E6501B" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Best selling days area chart */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-            <h2 className="text-lg font-bold text-slate-900">
-              📅 Best Selling Days
-            </h2>
-            <span className="text-xs text-slate-500 font-medium">
-              Weekly revenue trend
-            </span>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={BEST_DAYS}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000}k`} />
-                <Tooltip formatter={(value) => formatterCurrency(value)} />
-                <Area type="monotone" dataKey="revenue" stroke="#C3110C" fill="#fee2e2" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Owner-only high grossing branch bar chart */}
-        {role === 'owner' && (
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col lg:col-span-2">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-              <h2 className="text-lg font-bold text-slate-900">
-                🏢 High Grossing Branches
-              </h2>
-              <span className="text-xs text-slate-500 font-medium">
-                Owner overview of branch performance
-              </span>
-            </div>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={BRANCH_REVENUE}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                  <XAxis dataKey="branch" tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000}k`} />
-                  <Tooltip formatter={(value) => formatterCurrency(value)} />
-                  <Bar dataKey="revenue" fill="#C3110C" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
       </div>
+
     </section>
   );
 }

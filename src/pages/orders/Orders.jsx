@@ -16,6 +16,7 @@ function Orders() {
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -36,6 +37,13 @@ function Orders() {
   const summary = useMemo(() => {
     return getOrderStats(orders);
   }, [orders]);
+
+  const filteredOrders = useMemo(() => {
+    if (!selectedStatus) return orders;
+    return orders.filter(order => 
+      order.status?.toLowerCase() === selectedStatus.toLowerCase()
+    );
+  }, [orders, selectedStatus]);
 
   const handleRowClick = (order) => {
     setSelectedOrder(order);
@@ -97,6 +105,64 @@ function Orders() {
         ))}
       </div>
 
+      {/* Status Filters */}
+      <div className="flex flex-wrap gap-3">
+        <button
+          onClick={() => setSelectedStatus(null)}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedStatus === null
+              ? 'bg-[#FF4D4F] text-white shadow-lg'
+              : 'bg-white text-slate-700 border border-slate-300 hover:border-slate-400 hover:bg-slate-50'
+          }`}
+        >
+          All Orders
+        </button>
+        <button
+          onClick={() => setSelectedStatus('pending')}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedStatus === 'pending'
+              ? 'bg-[#cf1322] text-white shadow-lg'
+              : 'bg-[#fff1f0] text-[#cf1322] border border-[#ffa39e] hover:shadow-md'
+          }`}
+        >
+          <Clock className="inline-block w-4 h-4 mr-2" />
+          Pending
+        </button>
+        <button
+          onClick={() => setSelectedStatus('preparing')}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedStatus === 'preparing'
+              ? 'bg-[#d46b08] text-white shadow-lg'
+              : 'bg-[#fff7e6] text-[#d46b08] border border-[#ffd591] hover:shadow-md'
+          }`}
+        >
+          <Coffee className="inline-block w-4 h-4 mr-2" />
+          Preparing
+        </button>
+        <button
+          onClick={() => setSelectedStatus('ready')}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedStatus === 'ready'
+              ? 'bg-[#389e0d] text-white shadow-lg'
+              : 'bg-[#f6ffed] text-[#389e0d] border border-[#b7eb8f] hover:shadow-md'
+          }`}
+        >
+          <CheckCircle className="inline-block w-4 h-4 mr-2" />
+          Ready
+        </button>
+        <button
+          onClick={() => setSelectedStatus('delivered')}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedStatus === 'delivered'
+              ? 'bg-slate-700 text-white shadow-lg'
+              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          }`}
+        >
+          <Truck className="inline-block w-4 h-4 mr-2" />
+          Delivered
+        </button>
+      </div>
+
       {/* Orders Table */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {/* States */}
@@ -124,8 +190,16 @@ function Orders() {
           </div>
         )}
 
+        {!loading && !error && orders.length > 0 && filteredOrders.length === 0 && (
+          <div className="p-12 text-center">
+            <div className="text-4xl mb-3"><Inbox className="inline-block w-10 h-10 text-slate-400" /></div>
+            <p className="text-slate-600 font-medium">No {selectedStatus} orders</p>
+            <p className="text-sm text-slate-500 mt-1">No orders found with the selected status</p>
+          </div>
+        )}
+
         {/* Table */}
-        {!loading && !error && orders.length > 0 && (
+        {!loading && !error && orders.length > 0 && filteredOrders.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -138,7 +212,7 @@ function Orders() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {orders.map((order) => (
+                {filteredOrders.map((order) => (
                   <tr
                     key={order.id || order._id}
                     onClick={() => handleRowClick(order)}

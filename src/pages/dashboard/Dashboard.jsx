@@ -13,16 +13,17 @@ import {
 } from 'lucide-react';
 import RightPanel from '../../shared/panels/RightPanel';
 import { getRestaurantOrders } from '@/services/orderapi';
-import { getRestaurantInventory } from '@/services/inventoryapi';
 import { getMenuProductsByRestaurant } from '@/services/menuapi';
 import { getStaff as fetchStaffList } from '@/services/staffapi';
+import { useInventory } from '../inventory/InventoryContext';
 
 function Dashboard() {
   const role =
     typeof window !== 'undefined' ? window.localStorage.getItem('role') : null;
 
   const [orders, setOrders] = useState([]);
-  const [inventory, setInventory] = useState([]);
+  // use context inventory instead of local copy
+  const { inventoryItems, refreshInventory } = useInventory();
   const [products, setProducts] = useState([]);
   const [staff, setStaff] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,15 +55,14 @@ function Dashboard() {
     const fetchAll = async () => {
       try {
         setIsLoading(true);
-        const [o, inv, prod, st] = await Promise.all([
+        const [o, prod, st] = await Promise.all([
           getRestaurantOrders(),
-          getRestaurantInventory(),
           getMenuProductsByRestaurant(),
           fetchStaffList(),
         ]);
         if (!mounted) return;
         setOrders(o || []);
-        setInventory(inv || []);
+        // inventory comes from context, no setInventory
         setProducts(prod || []);
         setStaff(st || []);
       } catch (err) {
@@ -84,18 +84,22 @@ function Dashboard() {
     );
     const totalRevenue = deliveredOrders.reduce((acc, o) => acc + extractOrderTotal(o), 0);
     const totalOrders = orders.length;
-    const lowStock = inventory.filter((i) => Number(i.availableQuantity) <= Number(i.thresholdQuantity || 0));
-    const stockOut = inventory.filter((i) => Number(i.availableQuantity) === 0);
+    // use context inventoryItems
+    const stockOut = inventoryItems.filter((i) => i.status === 'out');
+    const lowStock = inventoryItems.filter((i) => i.status === 'low');
 
     return {
       totalRevenue,
       totalOrders,
       totalProducts: products.length,
+      lowStock,
+      stockOut,
       lowStockCount: lowStock.length,
       stockOutCount: stockOut.length,
+      alertCount: lowStock.length + stockOut.length,
       totalStaff: staff.length,
     };
-  }, [orders, inventory, products, staff]);
+  }, [orders, inventoryItems, products, staff]);
 
   const cards = [
     {
@@ -126,24 +130,6 @@ function Dashboard() {
       onClick: () => openPanel('products'),
     },
     {
-      key: 'lowStock',
-      title: 'Low Stock Items',
-      value: (stats.lowStockCount || 0).toString(),
-      description: 'Click to view low stock items',
-      icon: AlertTriangle,
-      color: 'bg-rose-50 text-rose-700',
-      onClick: () => openPanel('lowStock'),
-    },
-    {
-      key: 'stockOut',
-      title: 'Stock Out Items',
-      value: (stats.stockOutCount || 0).toString(),
-      description: 'Click to view stock out items',
-      icon: AlertTriangle,
-      color: 'bg-red-50 text-red-700',
-      onClick: () => openPanel('stockOut'),
-    },
-    {
       key: 'totalStaff',
       title: 'Total Staff',
       value: (stats.totalStaff || 0).toString(),
@@ -157,6 +143,10 @@ function Dashboard() {
   const allCards = cards;
 
   function openPanel(type) {
+    // always refresh before showing a filtered list
+    if (type === 'lowStock' || type === 'stockOut') {
+      refreshInventory();
+    }
     setPanelType(type);
     setIsPanelOpen(true);
   }
@@ -186,7 +176,7 @@ function Dashboard() {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
           Restaurant Dashboard
         </h1>
-        <p className="text-slate-500 text-lg">Welcome back! Here's your performance overview.</p>
+        <p className="text-slate-500 text-lg">Welcome back! Here's your inventory alert overview.</p>
       </div>
 
       {isLoading ? (
@@ -199,7 +189,7 @@ function Dashboard() {
       ) : (
         <>
           {/* Main Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
             {allCards.map((card) => {
               const Icon = card.icon;
               const gradientMap = {
@@ -265,11 +255,7 @@ function Dashboard() {
                       </p>
                       <p className="text-sm text-slate-500 mt-1">This month's revenue</p>
                     </div>
-                    <div className="flex items-center gap-1 text-emerald-600">
-                      <TrendingUp className="h-5 w-5" />
-                      <span className="text-sm font-semibold">+12.4%</span>
                     </div>
-                  </div>
                 </div>
 
                 {/* Chart */}
@@ -287,75 +273,39 @@ function Dashboard() {
 
             {/* Quick Stats */}
             <div className="space-y-4">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-50 rounded-3xl p-6 shadow-lg border border-blue-200/50 h-full flex flex-col justify-between">
-                <div>
-                  <div className="inline-flex h-10 w-10 rounded-xl bg-blue-100 text-blue-600 items-center justify-center mb-3">
-                    <Activity className="h-5 w-5" />
-                  </div>
-                  <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Performance
+              <div className="grid grid-cols-2 gap-4">
+                <div
+                  onClick={() => openPanel('lowStock')}
+                  className="cursor-pointer rounded-3xl p-4 bg-amber-50 border border-amber-200/50 shadow hover:shadow-md transition flex flex-col items-center justify-center"
+                >
+                  <AlertTriangle className="h-6 w-6 text-amber-600 mb-2" />
+                  <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
+                    Low stock
                   </p>
-                  <p className="text-3xl font-bold text-blue-900 mt-2">
-                    {((stats.totalOrders - stats.lowStockCount - stats.stockOutCount) / Math.max(stats.totalOrders, 1) * 100).toFixed(0)}%
+                  <p className="text-2xl font-bold text-amber-900 mt-1">
+                    {stats.lowStockCount}
                   </p>
-                  <p className="text-sm text-blue-600 mt-1">Overall health</p>
                 </div>
-                <div className="text-xs text-blue-600 font-medium">No critical issues</div>
+                <div
+                  onClick={() => openPanel('stockOut')}
+                  className="cursor-pointer rounded-3xl p-4 bg-red-50 border border-red-200/50 shadow hover:shadow-md transition flex flex-col items-center justify-center"
+                >
+                  <AlertTriangle className="h-6 w-6 text-red-600 mb-2" />
+                  <p className="text-xs font-semibold text-red-600 uppercase tracking-wider">
+                    Out of stock
+                  </p>
+                  <p className="text-2xl font-bold text-red-900 mt-1">
+                    {stats.stockOutCount}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Info Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Alerts Section */}
-            <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-200/50">
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  Inventory Alerts
-                </h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-200/50 hover:bg-amber-100/50 transition">
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-amber-500" />
-                      <span className="text-sm text-amber-900 font-medium">Low Stock Items</span>
-                    </div>
-                    <span className="px-2.5 py-1 bg-amber-200 text-amber-900 rounded-full text-xs font-semibold">
-                      {stats.lowStockCount}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200/50 hover:bg-red-100/50 transition">
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-red-500" />
-                      <span className="text-sm text-red-900 font-medium">Out of Stock</span>
-                    </div>
-                    <span className="px-2.5 py-1 bg-red-200 text-red-900 rounded-full text-xs font-semibold">
-                      {stats.stockOutCount}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Staff Overview */}
-            <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-200/50">
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Users className="h-5 w-5 text-purple-500" />
-                  Team Overview
-                </h3>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-4xl font-bold text-slate-900">{stats.totalStaff}</p>
-                    <p className="text-sm text-slate-500 mt-1">Active team members</p>
-                  </div>
-                  <div className="space-y-2 text-right">
-                    <div className="h-8 w-24 bg-gradient-to-r from-purple-400 to-purple-600 rounded-lg shadow-md" />
-                    <p className="text-xs text-slate-500">Team capacity</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+
           </div>
         </>
       )}
@@ -365,7 +315,7 @@ function Dashboard() {
           type={panelType}
           orders={orders}
           products={products}
-          inventory={inventory}
+          inventory={inventoryItems}
           staff={staff}
         />
       </RightPanel>
@@ -496,22 +446,80 @@ function PanelContent({ type, orders = [], products = [], inventory = [], staff 
   }
 
   if (type === 'lowStock' || type === 'stockOut') {
-    const low = inventory.filter((i) => (type === 'stockOut' ? Number(i.availableQuantity) === 0 : Number(i.availableQuantity) <= Number(i.thresholdQuantity || 0)));
+    const list = inventory.filter((i) =>
+      type === 'stockOut'
+        ? Number(i.quantity) === 0
+        : Number(i.quantity) > 0 &&
+          Number(i.quantity) < Number(i.threshold || i.thresholdQuantity || 0)
+    );
+    const title = type === 'stockOut' ? 'Out of Stock Products' : 'Low Stock Products';
     return (
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-2">{type === 'stockOut' ? 'Stock Out Items' : 'Low Stock Items'}</h3>
-        {low.length === 0 && <p className="text-xs text-slate-500">No items</p>}
-        <ul className="space-y-3">
-          {low.map((it) => (
-            <li key={it.id || it._id} className="rounded-md border p-2">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-medium">{it.name || it.ingredientName || 'Item'}</div>
-                <div className="text-sm text-slate-700">{it.availableQuantity}</div>
-              </div>
-              <div className="text-xs text-slate-500">Threshold: {it.thresholdQuantity || 0}</div>
+        <h3 className="text-sm font-semibold text-slate-900 mb-2">{title}</h3>
+        {list.length === 0 && <p className="text-xs text-slate-500">No products to show</p>}
+        <ul className="space-y-2">
+          {list.map((it) => (
+            <li
+              key={it.id || it._id}
+              className="flex justify-between rounded-md bg-slate-50 px-3 py-2"
+            >
+              <span className="text-sm font-medium truncate">
+                {it.name || it.ingredientName || 'Item'}
+              </span>
+              <span className="text-sm font-semibold">
+                {it.quantity}
+              </span>
             </li>
           ))}
         </ul>
+      </div>
+    );
+  }
+
+  if (type === 'inventoryAlerts') {
+    const stockOut = inventory.filter((i) => Number(i.availableQuantity) === 0);
+    const low = inventory.filter((i) => {
+      const qty = Number(i.availableQuantity);
+      const thresh = Number(i.thresholdQuantity || 0);
+      return qty > 0 && qty < thresh;
+    });
+    return (
+      <div className="space-y-6">
+        <h3 className="text-sm font-semibold text-slate-900 mb-2">Inventory Alerts</h3>
+        {(low.length === 0 && stockOut.length === 0) && (
+          <p className="text-xs text-slate-500">No items below threshold or out of stock</p>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* low stock column */}
+          {low.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-amber-600 uppercase">Low Stock</p>
+              <ul className="mt-2 space-y-1">
+                {low.map((it) => (
+                  <li key={it.id || it._id} className="flex justify-between rounded-md bg-amber-50 px-3 py-2">
+                    <span className="text-sm font-medium text-amber-900 truncate">{it.name || it.ingredientName || 'Item'}</span>
+                    <span className="text-xs text-amber-700">{it.availableQuantity}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* out of stock column */}
+          {stockOut.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-red-600 uppercase">Out of Stock</p>
+              <ul className="mt-2 space-y-1">
+                {stockOut.map((it) => (
+                  <li key={it.id || it._id} className="flex justify-between rounded-md bg-red-50 px-3 py-2">
+                    <span className="text-sm font-medium text-red-900 truncate">{it.name || it.ingredientName || 'Item'}</span>
+                    <span className="text-xs text-red-700">0</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

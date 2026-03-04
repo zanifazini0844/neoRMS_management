@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { createContext, useContext, useMemo, useState, useEffect, useRef } from 'react';
 import {
   getRestaurantInventory,
   createRestaurantInventory,
@@ -8,6 +8,9 @@ import {
   addInventoryQuantity,
   subtractInventoryQuantity,
 } from '@/services/inventoryapi';
+
+// we emit toast messages when stock dips below threshold or hits zero
+import { sendLowStockAlert, sendStockOutAlert } from '@/services/notificationService';
 
 const InventoryContext = createContext(null);
 
@@ -164,6 +167,42 @@ export function InventoryProvider({ children }) {
     };
   }, [inventoryItems]);
 
+  // send toast notifications when inventory status changes.  we also
+  // want to notify on the initial load for any items already low or
+  // out so the user is made aware immediately.
+  const prevItemsRef = useRef([]);
+
+  useEffect(() => {
+    const prevItems = prevItemsRef.current;
+
+    inventoryItems.forEach((item) => {
+      const prev = prevItems.find((i) => i.id === item.id);
+
+      // item wasn't present previously - treat as "new" but still
+      // notify if it's already in an alert state
+      if (!prev) {
+        if (item.status === 'low') {
+          sendLowStockAlert(item.name, item.quantity, item.threshold);
+        }
+        if (item.status === 'out') {
+          sendStockOutAlert(item.name);
+        }
+        return;
+      }
+
+      // low stock transition
+      if (item.status === 'low' && prev.status !== 'low') {
+        sendLowStockAlert(item.name, item.quantity, item.threshold);
+      }
+      // out of stock transition
+      if (item.status === 'out' && prev.status !== 'out') {
+        sendStockOutAlert(item.name);
+      }
+    });
+
+    prevItemsRef.current = inventoryItems;
+  }, [inventoryItems]);
+
   // optional helpers exposed to callers in case they want to perform
   // more advanced operations (delete, adjust quantity) from other
   // components.  the API now supports deleting by inventoryId alone,
@@ -234,6 +273,7 @@ export function InventoryProvider({ children }) {
       getLowStockItems,
       getOutOfStockItems,
       totalAlertCount,
+      refreshInventory,
     }),
     [
       inventoryItems,

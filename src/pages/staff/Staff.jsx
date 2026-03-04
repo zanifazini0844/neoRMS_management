@@ -19,6 +19,7 @@ function Staff() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [restaurantNotFound, setRestaurantNotFound] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [formValues, setFormValues] = useState({
     name: '',
     email: '',
@@ -61,6 +62,16 @@ function Staff() {
       return haystack.includes(q);
     });
   }, [staff, searchQuery]);
+
+  const filteredByRole = useMemo(() => {
+    let result = filteredStaff;
+    if (selectedRole) {
+      result = filteredStaff.filter((member) => 
+        member.role?.toLowerCase() === selectedRole.toLowerCase()
+      );
+    }
+    return result;
+  }, [filteredStaff, selectedRole]);
 
   const handleOpenPanel = () => {
     const restaurantId = typeof window !== 'undefined' && window.localStorage.getItem('restaurantId');
@@ -326,7 +337,52 @@ function Staff() {
         </div>
       </div>
 
-      {/* Staff Table */}
+      {/* Role Filter Buttons */}
+      <div className="flex flex-wrap gap-3">
+        <button
+          onClick={() => setSelectedRole(null)}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedRole === null
+              ? 'bg-[#FF4D4F] text-white shadow-lg'
+              : 'bg-white text-slate-700 border border-slate-300 hover:border-slate-400 hover:bg-slate-50'
+          }`}
+        >
+          All Staff
+        </button>
+        <button
+          onClick={() => setSelectedRole('Manager')}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedRole === 'Manager'
+              ? 'bg-purple-600 text-white shadow-lg'
+              : 'bg-purple-50 text-purple-700 border border-purple-200 hover:shadow-md'
+          }`}
+        >
+          <Target className="inline-block w-4 h-4 mr-2" />
+          Manager
+        </button>
+        <button
+          onClick={() => setSelectedRole('Chef')}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedRole === 'Chef'
+              ? 'bg-orange-600 text-white shadow-lg'
+              : 'bg-orange-50 text-orange-700 border border-orange-200 hover:shadow-md'
+          }`}
+        >
+          <Coffee className="inline-block w-4 h-4 mr-2" />
+          Chef
+        </button>
+        <button
+          onClick={() => setSelectedRole('Waiter')}
+          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+            selectedRole === 'Waiter'
+              ? 'bg-blue-600 text-white shadow-lg'
+              : 'bg-blue-50 text-blue-700 border border-blue-200 hover:shadow-md'
+          }`}
+        >
+          <ShoppingBag className="inline-block w-4 h-4 mr-2" />
+          Waiter
+        </button>
+      </div>
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {loading && (
           <div className="flex items-center justify-center py-12">
@@ -349,7 +405,15 @@ function Staff() {
             <p className="text-sm text-slate-500 mt-1">Add your first team member to get started</p>
           </div>
         )}
-        {!loading && filteredStaff.length > 0 && (
+
+        {!loading && staff.length > 0 && filteredByRole.length === 0 && (
+          <div className="p-12 text-center">
+            <div className="text-4xl mb-3"><Users className="inline-block w-10 h-10 text-slate-400" /></div>
+            <p className="text-slate-600 font-medium">No {selectedRole} found</p>
+            <p className="text-sm text-slate-500 mt-1">No staff members with the selected role</p>
+          </div>
+        )}
+        {!loading && filteredByRole.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -361,7 +425,7 @@ function Staff() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredStaff.map((member) => (
+                {filteredByRole.map((member) => (
                   <tr
                     key={member.id}
                     className="hover:bg-slate-50 cursor-pointer transition-colors duration-150 border-b border-slate-100 last:border-0"
