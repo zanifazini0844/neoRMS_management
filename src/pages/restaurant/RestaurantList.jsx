@@ -23,6 +23,9 @@ const RestaurantList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // scrollable list container reference (used only for styling)
+  const listRef = React.useRef(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -232,12 +235,15 @@ const RestaurantList = () => {
               No restaurants found. Add your first restaurant!
             </p>
           ) : (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            <div
+              ref={listRef}
+              className="space-y-3 h-72 overflow-y-auto pr-1"
+            >
               {restaurants.map((r) => (
-                <div
-                  key={r.id}
-                  className="flex items-center justify-between bg-white border rounded-lg p-4 hover:shadow-sm transition"
-                >
+                  <div
+                    key={r.id}
+                    className="flex items-center justify-between bg-white border rounded-lg p-4 hover:shadow-sm transition"
+                  >
                   <div className="flex items-center gap-4">
                     <img
                       src={r.bannerImage || "/default-image.png"}

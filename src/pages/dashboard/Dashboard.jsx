@@ -156,7 +156,7 @@ function Dashboard() {
     setPanelType(null);
   }
 
-  // Create a tiny revenue-by-month sparkline from delivered orders only
+  // Create a list of revenue entries keyed by year-month, include real month names
   const revenueByMonth = useMemo(() => {
     const map = new Map();
     const deliveredOrders = orders.filter((o) => (o.status || '').toLowerCase() === 'delivered');
@@ -166,7 +166,13 @@ function Dashboard() {
       map.set(key, (map.get(key) || 0) + extractOrderTotal(o));
     });
     const entries = Array.from(map.entries()).sort();
-    return entries.map(([, val]) => val);
+    return entries.map(([key, val]) => {
+      const [year, month] = key.split('-');
+      const monthName = new Date(year, month - 1).toLocaleString('default', {
+        month: 'short',
+      });
+      return { key, monthName, value: val };
+    });
   }, [orders]);
 
   return (
@@ -328,16 +334,16 @@ function RevenueChart({ data = [] }) {
     return null;
   }
 
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data, 0);
+  // values are stored in objects with monthName
+  const values = data.map((d) => d.value);
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
   const range = max - min || 1;
 
   return (
     <div className="w-full flex items-end justify-between gap-1.5 h-48 px-2">
-      {data.map((value, index) => {
-        const heightPercent = ((value - min) / range) * 100;
-        const isPositive = value > 0;
-        
+      {data.map((entry, index) => {
+        const heightPercent = ((entry.value - min) / range) * 100;
         return (
           <div key={index} className="flex-1 flex flex-col items-center gap-2">
             <div
@@ -348,7 +354,7 @@ function RevenueChart({ data = [] }) {
               }}
             />
             <span className="text-xs text-slate-400 font-medium">
-              {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][index] || `M${index + 1}`}
+              {entry.monthName}
             </span>
           </div>
         );
