@@ -1,18 +1,19 @@
 import { useEffect, useState, useCallback } from 'react';
+import { getAccessToken, getUserRole, clearAuthCredentials } from '@/services/authStorage';
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return Boolean(localStorage.getItem('authToken'));
+    return Boolean(getAccessToken());
   });
   const [role, setRole] = useState(() => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('authRole');
+    return getUserRole();
   });
 
   const handleStorage = useCallback(() => {
-    const token = localStorage.getItem('authToken');
-    const storedRole = localStorage.getItem('authRole');
+    const token = getAccessToken();
+    const storedRole = getUserRole();
 
     setIsAuthenticated(Boolean(token));
     setRole(storedRole || null);
@@ -24,8 +25,7 @@ export function useAuth() {
   }, [handleStorage]);
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authRole');
+    clearAuthCredentials();
     setIsAuthenticated(false);
     setRole(null);
   };

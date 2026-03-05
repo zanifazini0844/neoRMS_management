@@ -1,16 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { getAccessToken, getUserRole } from '@/services/authStorage';
 
 function ProtectedRoute({ children, allowedRoles }) {
   const location = useLocation();
 
-  const token =
-    typeof window !== 'undefined' ? window.localStorage.getItem('authToken') : null;
-  const storedRole =
-    typeof window !== 'undefined'
-      ? window.localStorage.getItem('authRole') || window.localStorage.getItem('role')
-      : null;
-
-  const role = storedRole ? String(storedRole).toLowerCase() : null;
+  const token = getAccessToken();
+  const role = getUserRole();
 
   // If there is no auth session, send user to login
   if (!token) {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import RightPanel from "../../shared/panels/RightPanel";
+import Pagination from "../../shared/Pagination";
 import { getRestaurantOrders, getOrderStats } from "../../services/orderapi";
 import { Package, Clock, Coffee, CheckCircle, Truck, Clipboard, Inbox, AlertTriangle } from 'lucide-react';
 
@@ -44,6 +45,20 @@ function Orders() {
       order.status?.toLowerCase() === selectedStatus.toLowerCase()
     );
   }, [orders, selectedStatus]);
+
+  // pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // rows per page
+
+  // reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredOrders]);
+
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredOrders.slice(start, start + pageSize);
+  }, [filteredOrders, currentPage]);
 
   const handleRowClick = (order) => {
     setSelectedOrder(order);
@@ -200,24 +215,25 @@ function Orders() {
 
         {/* Table */}
         {!loading && !error && orders.length > 0 && filteredOrders.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Order ID</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Customer</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Total Amount</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Date & Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredOrders.map((order) => (
-                  <tr
-                    key={order.id || order._id}
-                    onClick={() => handleRowClick(order)}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors duration-150 border-b border-slate-100 last:border-0"
-                  >
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Order ID</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Customer</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Total Amount</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedOrders.map((order) => (
+                    <tr
+                      key={order.id || order._id}
+                      onClick={() => handleRowClick(order)}
+                      className="hover:bg-slate-50 cursor-pointer transition-colors duration-150 border-b border-slate-100 last:border-0"
+                    >
                     <td className="px-6 py-4 font-semibold text-slate-900">
                       #{(order.id || order._id || "").slice(0, 6).toUpperCase()}
                     </td>
@@ -239,7 +255,14 @@ function Orders() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredOrders.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </div>
 
@@ -251,7 +274,7 @@ function Orders() {
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-1">
                 <Clipboard className="w-5 h-5" /> Order Details
               </h3>
-              <p className="text-xs text-slate-500 mt-1">Order #{ (selectedOrder.id || selectedOrder._id || "").slice(0, 6).toUpperCase()}</p>
+              <p className="text-xs text-slate-500 mt-1">Order #{(selectedOrder.id || selectedOrder._id || "").slice(0, 6).toUpperCase()}</p>
             </div>
 
             <div className="space-y-5">

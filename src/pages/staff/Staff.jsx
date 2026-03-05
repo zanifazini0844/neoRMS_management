@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import RightPanel from '../../shared/panels/RightPanel';
+import Pagination from '../../shared/Pagination';
 import { useSearch } from '../../shared/search/SearchContext';
 import { getStaff, createStaff, updateStaff, deleteStaff, fetchAndStoreUserRestaurant } from '@/services/staffapi';
 import { Users, Coffee, ShoppingBag, Target } from 'lucide-react';
@@ -72,6 +73,19 @@ function Staff() {
     }
     return result;
   }, [filteredStaff, selectedRole]);
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredByRole]);
+
+  const paginatedStaff = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredByRole.slice(start, start + pageSize);
+  }, [filteredByRole, currentPage]);
 
   const handleOpenPanel = () => {
     const restaurantId = typeof window !== 'undefined' && window.localStorage.getItem('restaurantId');
@@ -414,43 +428,51 @@ function Staff() {
           </div>
         )}
         {!loading && filteredByRole.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredByRole.map((member) => (
-                  <tr
-                    key={member.id}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors duration-150 border-b border-slate-100 last:border-0"
-                    onClick={() => handleRowClick(member)}
-                  >
-                    <td className="px-6 py-4 font-semibold text-slate-900">{member.name}</td>
-                    <td className="px-6 py-4 text-slate-600">{member.email}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
-                        {member.role?.toLowerCase() === 'chef' && <Coffee className="w-4 h-4 mr-1" />}
-                        {member.role?.toLowerCase() === 'waiter' && <ShoppingBag className="w-4 h-4 mr-1" />}
-                        {member.role?.toLowerCase() === 'manager' && <Target className="w-4 h-4 mr-1" />}
-                        {member.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-green-50 text-green-700">
-                        ✓ Active
-                      </span>
-                    </td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedStaff.map((member) => (
+                    <tr
+                      key={member.id}
+                      className="hover:bg-slate-50 cursor-pointer transition-colors duration-150 border-b border-slate-100 last:border-0"
+                      onClick={() => handleRowClick(member)}
+                    >
+                      <td className="px-6 py-4 font-semibold text-slate-900">{member.name}</td>
+                      <td className="px-6 py-4 text-slate-600">{member.email}</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+                          {member.role?.toLowerCase() === 'chef' && <Coffee className="w-4 h-4 mr-1" />}
+                          {member.role?.toLowerCase() === 'waiter' && <ShoppingBag className="w-4 h-4 mr-1" />}
+                          {member.role?.toLowerCase() === 'manager' && <Target className="w-4 h-4 mr-1" />}
+                          {member.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-green-50 text-green-700">
+                          ✓ Active
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredByRole.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import RightPanel from '../../shared/panels/RightPanel';
+import Pagination from '../../shared/Pagination';
 import { useInventory } from './InventoryContext';
 import { useSearch } from '../../shared/search/SearchContext';
 import { Trash2 } from 'lucide-react';
@@ -81,6 +82,19 @@ function InventoryList() {
     nameFilter,
     searchQuery,
   ]);
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredItems]);
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, currentPage]);
 
   // Open add panel
   const handleOpenAdd = () => {
@@ -190,6 +204,7 @@ function InventoryList() {
             </div>
             <div className="flex items-center gap-4 w-full sm:w-auto">
               <p className="text-xs text-slate-500 font-medium">
+                {/* range info handled by pagination below table */}
                 Showing <span className="font-bold text-slate-900">{filteredItems.length}</span> of <span className="font-bold text-slate-900">{inventoryItems.length}</span>
               </p>
               <button
@@ -263,7 +278,7 @@ function InventoryList() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredItems.map((item) => (
+                    {paginatedItems.map((item) => (
                       <tr
                         key={item.id}
                         onClick={() => handleRowClick(item)}
@@ -307,6 +322,12 @@ function InventoryList() {
                   </tbody>
                 </table>
               </div>
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredItems.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+              />
             </div>
           )}
         </>
