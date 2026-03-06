@@ -1,33 +1,18 @@
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ShoppingBag,
   Utensils,
-  Boxes,
   Users,
   BarChart3,
   UserCircle,
   LogOut,
-  ChevronDown,
   UtensilsCrossed,
-  Menu,
-  X,
   LayoutGrid,
 } from 'lucide-react';
 
 function AdminSidebar() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [inventoryOpen, setInventoryOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // Auto-open inventory dropdown if inside inventory route
-  useEffect(() => {
-    if (location.pathname.startsWith('/admin/inventory')) {
-      setInventoryOpen(true);
-    }
-  }, [location.pathname]);
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
@@ -41,7 +26,6 @@ function AdminSidebar() {
     { label: 'Orders', icon: ShoppingBag, to: '/admin/orders' },
     { label: 'Menu', icon: Utensils, to: '/admin/menu' },
     { label: 'Tables', icon: LayoutGrid, to: '/admin/tables' },
-    { label: 'Inventory', icon: Boxes, isDropdown: true },
     { label: 'Staff', icon: Users, to: '/admin/staff' },
     { label: 'Analytics', icon: BarChart3, to: '/admin/analytics' },
   ];
@@ -51,13 +35,6 @@ function AdminSidebar() {
       isActive
         ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-lg shadow-red-200'
         : 'text-slate-600 hover:text-[#FF4D4F] hover:bg-[#FFF5F5]'
-    }`;
-
-  const dropdownItemClasses = (isActive) =>
-    `flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-      isActive
-        ? 'bg-gradient-to-r from-[#FF4D4F] to-[#FF7F7F] text-white shadow-md'
-        : 'text-slate-600 hover:text-[#FF4D4F] hover:bg-[#FFECEC]'
     }`;
 
   return (
@@ -82,48 +59,6 @@ function AdminSidebar() {
         </p>
 
         {topItems.map((item) => {
-          if (item.isDropdown) {
-            return (
-              <div key={item.label}>
-                <button
-                  onClick={() => setInventoryOpen(!inventoryOpen)}
-                  className={`${navItemClasses(
-                    inventoryOpen || location.pathname.startsWith('/admin/inventory')
-                  )} w-full justify-between group`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Boxes className="h-5 w-5 flex-shrink-0" />
-                    <span>{item.label}</span>
-                  </div>
-                  <ChevronDown
-                    className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${
-                      inventoryOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {inventoryOpen && (
-                  <div className="mt-2 ml-2 pl-2 border-l-2 border-slate-200 space-y-1">
-                    <NavLink
-                      to="/admin/inventory/overview"
-                      className={({ isActive }) => dropdownItemClasses(isActive)}
-                    >
-                      <div className="h-1.5 w-1.5 rounded-full bg-current flex-shrink-0" />
-                      <span>Overview</span>
-                    </NavLink>
-                    <NavLink
-                      to="/admin/inventory/list"
-                      className={({ isActive }) => dropdownItemClasses(isActive)}
-                    >
-                      <div className="h-1.5 w-1.5 rounded-full bg-current flex-shrink-0" />
-                      <span>Inventory List</span>
-                    </NavLink>
-                  </div>
-                )}
-              </div>
-            );
-          }
-
           const Icon = item.icon;
           return (
             <NavLink
