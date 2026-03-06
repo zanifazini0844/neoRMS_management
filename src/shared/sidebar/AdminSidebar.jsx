@@ -5,6 +5,7 @@ import {
   Utensils,
   Users,
   BarChart3,
+  MessageSquareWarning,
   UserCircle,
   LogOut,
   UtensilsCrossed,
@@ -28,6 +29,7 @@ function AdminSidebar() {
     { label: 'Tables', icon: LayoutGrid, to: '/admin/tables' },
     { label: 'Staff', icon: Users, to: '/admin/staff' },
     { label: 'Analytics', icon: BarChart3, to: '/admin/analytics' },
+    { label: 'Reviews', icon: MessageSquareWarning, to: '/admin/reviews' },
   ];
 
   const navItemClasses = (isActive) =>

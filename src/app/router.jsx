@@ -6,6 +6,7 @@ import Orders from '../pages/orders/Orders';
 import Menu from '../pages/menu/Menu';
 import Staff from '../pages/staff/Staff';
 import Analytics from '../pages/analytics/Analytics';
+import Reviews from '../pages/reviews/Reviews';
 import Profile from '../pages/profile/Profile';
 import TableManagement from '../pages/table/TableManagement';
 import RestaurantList from "../pages/restaurant/RestaurantList";
@@ -52,6 +53,7 @@ function AppRouter() {
           <Route path="staff" element={<Staff />} />
           <Route path="tables" element={<TableManagement />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="reviews" element={<Reviews />} />
           <Route path="profile" element={<Profile />} />
           <Route path="search" element={<SearchResults />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
