@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthCard from "../../../pages/login_registration/AuthCard";
 import AuthForm from "../../../pages/login_registration/AuthForm";
-import { registerOwner } from "@/services/registerApi"; 
+import { registerOwner } from "@/services/registerapi"; 
 
 export default function OwnerRegister() {
   const navigate = useNavigate();

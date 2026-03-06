@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthCard from "../../../pages/login_registration/AuthCard";
 import AuthForm from "../../../pages/login_registration/AuthForm";
-import { loginManagement } from "@/services/loginApi";
+import { loginManagement } from "@/services/loginapi";
 import { fetchAndStoreUserRestaurant } from "@/services/staffapi";
 import { fetchOwnerRestaurants } from "@/services/restaurant/restaurantApi";
 import { storeAuthCredentials, storeOwnedRestaurants, getAllAuthData } from "@/services/authStorage";
