@@ -4,15 +4,13 @@ import AdminLayout from '../shared/adminlayout/AdminLayout';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Orders from '../pages/orders/Orders';
 import Menu from '../pages/menu/Menu';
-import InventoryOverview from "../pages/inventory/inventoryoverview";
-import InventoryList from "../pages/inventory/inventorylist";
 import Staff from '../pages/staff/Staff';
 import Analytics from '../pages/analytics/Analytics';
+import Reviews from '../pages/reviews/Reviews';
 import Profile from '../pages/profile/Profile';
 import TableManagement from '../pages/table/TableManagement';
 import RestaurantList from "../pages/restaurant/RestaurantList";
 import Unauthorized from '../pages/auth/Unauthorized';
-import { InventoryProvider } from '../pages/inventory/InventoryContext';
 import { SearchProvider } from '../shared/search/SearchContext';
 import SearchResults from '../shared/search/SearchResults';
 import { authRoutes } from '../pages/login_registration/auth.routes';
@@ -45,25 +43,20 @@ function AppRouter() {
           path="/admin"
           element={
             <ProtectedRoute>
-              <InventoryProvider>
-                <AdminLayout />
-              </InventoryProvider>
+              <AdminLayout />
             </ProtectedRoute>
           }
         >
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="menu" element={<Menu />} />
-          <Route path="inventory">
-          <Route index element={<InventoryOverview />} />
-          <Route path="overview" element={<InventoryOverview />} />
-          <Route path="list" element={<InventoryList />} />
-          </Route>
           <Route path="staff" element={<Staff />} />
           <Route path="tables" element={<TableManagement />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="reviews" element={<Reviews />} />
           <Route path="profile" element={<Profile />} />
           <Route path="search" element={<SearchResults />} />
+          <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
 
         {/* Default: redirect root/unknown to login */}

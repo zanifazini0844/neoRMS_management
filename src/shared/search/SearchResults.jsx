@@ -1,6 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useInventory } from '../../pages/inventory/InventoryContext';
 import { useSearch } from '../../shared/search/SearchContext';
 // real APIs instead of mocks
 import { getMenuProductsByRestaurant } from '@/services/menuapi';
@@ -27,7 +26,6 @@ function highlightMatch(text, query) {
 }
 
 function SearchResults() {
-  const { inventoryItems } = useInventory();
   const { searchQuery, setSearchQuery } = useSearch();
   const location = useLocation();
 
@@ -97,7 +95,6 @@ function SearchResults() {
 
   const {
     menuResults,
-    inventoryResults,
     staffResults,
     orderResults,
     restaurantResults,
@@ -106,7 +103,6 @@ function SearchResults() {
     if (!q) {
       return {
         menuResults: [],
-        inventoryResults: [],
         staffResults: [],
         orderResults: [],
         restaurantResults: [],
@@ -121,11 +117,6 @@ function SearchResults() {
       ]
         .join(' ')
         .toLowerCase();
-      return haystack.includes(q);
-    });
-
-    const inventoryResultsLocal = inventoryItems.filter((item) => {
-      const haystack = `${item.name}`.toLowerCase();
       return haystack.includes(q);
     });
 
@@ -160,16 +151,14 @@ function SearchResults() {
 
     return {
       menuResults: menuResultsLocal,
-      inventoryResults: inventoryResultsLocal,
       staffResults: staffResultsLocal,
       orderResults: orderResultsLocal,
       restaurantResults: restaurantResultsLocal,
     };
-  }, [menuItems, staffMembers, inventoryItems, orders, restaurants, trimmedQuery]);
+  }, [menuItems, staffMembers, orders, restaurants, trimmedQuery]);
 
   const hasResults =
     menuResults.length > 0 ||
-    inventoryResults.length > 0 ||
     staffResults.length > 0 ||
     orderResults.length > 0 ||
     restaurantResults.length > 0;
@@ -182,7 +171,7 @@ function SearchResults() {
         </h1>
         <p className="text-xs text-slate-500">
           Showing matches for &quot;{trimmedQuery || '...'}&quot; across
-          menu, inventory, staff, orders, and restaurants.
+          menu, staff, orders, and restaurants.
         </p>
       </div>
 
@@ -190,7 +179,7 @@ function SearchResults() {
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-sm text-slate-600">
             Use the search bar in the top navigation to find menu items,
-            inventory, staff, orders, and restaurants.
+            staff, orders, and restaurants.
           </p>
         </div>
       )}
@@ -233,44 +222,6 @@ function SearchResults() {
                     </div>
                     <p className="ml-2 text-xs font-semibold text-slate-900">
                       ${(item.price || item.productPrice || 0).toFixed(2)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Inventory results */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-2">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Inventory results
-            </h2>
-            {inventoryResults.length === 0 ? (
-              <p className="text-xs text-slate-500">
-                No inventory matches.
-              </p>
-            ) : (
-              <ul className="space-y-1 max-h-[400px] overflow-y-auto">
-                {inventoryResults.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-slate-50"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">
-                        {highlightMatch(item.name, trimmedQuery)}
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        Qty: {item.quantity}{' '}
-                        {item.status === 'available'
-                          ? '(Available)'
-                          : item.status === 'low'
-                          ? '(Low)'
-                          : '(Out)'}
-                      </p>
-                    </div>
-                    <p className="ml-2 text-xs font-semibold text-slate-900">
-                      ${(item.price || 0).toFixed(2)}
                     </p>
                   </li>
                 ))}

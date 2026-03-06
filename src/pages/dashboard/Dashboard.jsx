@@ -4,26 +4,19 @@ import {
   ShoppingBag,
   Star,
   DollarSign,
-  AlertTriangle,
   Users,
-  TrendingUp,
-  Activity,
   ArrowUpRight,
-  ArrowDownRight,
 } from 'lucide-react';
 import RightPanel from '../../shared/panels/RightPanel';
 import { getRestaurantOrders } from '@/services/orderapi';
 import { getMenuProductsByRestaurant } from '@/services/menuapi';
 import { getStaff as fetchStaffList } from '@/services/staffapi';
-import { useInventory } from '../inventory/InventoryContext';
 
 function Dashboard() {
   const role =
     typeof window !== 'undefined' ? window.localStorage.getItem('role') : null;
 
   const [orders, setOrders] = useState([]);
-  // use context inventory instead of local copy
-  const { inventoryItems, refreshInventory } = useInventory();
   const [products, setProducts] = useState([]);
   const [staff, setStaff] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,7 +55,6 @@ function Dashboard() {
         ]);
         if (!mounted) return;
         setOrders(o || []);
-        // inventory comes from context, no setInventory
         setProducts(prod || []);
         setStaff(st || []);
       } catch (err) {
@@ -84,22 +76,14 @@ function Dashboard() {
     );
     const totalRevenue = deliveredOrders.reduce((acc, o) => acc + extractOrderTotal(o), 0);
     const totalOrders = orders.length;
-    // use context inventoryItems
-    const stockOut = inventoryItems.filter((i) => i.status === 'out');
-    const lowStock = inventoryItems.filter((i) => i.status === 'low');
 
     return {
       totalRevenue,
       totalOrders,
       totalProducts: products.length,
-      lowStock,
-      stockOut,
-      lowStockCount: lowStock.length,
-      stockOutCount: stockOut.length,
-      alertCount: lowStock.length + stockOut.length,
       totalStaff: staff.length,
     };
-  }, [orders, inventoryItems, products, staff]);
+  }, [orders, products, staff]);
 
   const cards = [
     {
@@ -143,10 +127,6 @@ function Dashboard() {
   const allCards = cards;
 
   function openPanel(type) {
-    // always refresh before showing a filtered list
-    if (type === 'lowStock' || type === 'stockOut') {
-      refreshInventory();
-    }
     setPanelType(type);
     setIsPanelOpen(true);
   }
@@ -182,7 +162,7 @@ function Dashboard() {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
           Restaurant Dashboard
         </h1>
-        <p className="text-slate-500 text-lg">Welcome back! Here's your inventory alert overview.</p>
+        <p className="text-slate-500 text-lg">Welcome back! Here's your restaurant overview.</p>
       </div>
 
       {isLoading ? (
@@ -279,31 +259,9 @@ function Dashboard() {
 
             {/* Quick Stats */}
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div
-                  onClick={() => openPanel('lowStock')}
-                  className="cursor-pointer rounded-3xl p-4 bg-amber-50 border border-amber-200/50 shadow hover:shadow-md transition flex flex-col items-center justify-center"
-                >
-                  <AlertTriangle className="h-6 w-6 text-amber-600 mb-2" />
-                  <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
-                    Low stock
-                  </p>
-                  <p className="text-2xl font-bold text-amber-900 mt-1">
-                    {stats.lowStockCount}
-                  </p>
-                </div>
-                <div
-                  onClick={() => openPanel('stockOut')}
-                  className="cursor-pointer rounded-3xl p-4 bg-red-50 border border-red-200/50 shadow hover:shadow-md transition flex flex-col items-center justify-center"
-                >
-                  <AlertTriangle className="h-6 w-6 text-red-600 mb-2" />
-                  <p className="text-xs font-semibold text-red-600 uppercase tracking-wider">
-                    Out of stock
-                  </p>
-                  <p className="text-2xl font-bold text-red-900 mt-1">
-                    {stats.stockOutCount}
-                  </p>
-                </div>
+              <div className="rounded-3xl p-6 bg-slate-50 border border-slate-200/60 shadow-sm text-center">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overview</p>
+                <p className="mt-2 text-sm text-slate-600">Use cards above to explore orders, products, and staff details.</p>
               </div>
             </div>
           </div>
@@ -321,7 +279,6 @@ function Dashboard() {
           type={panelType}
           orders={orders}
           products={products}
-          inventory={inventoryItems}
           staff={staff}
         />
       </RightPanel>
